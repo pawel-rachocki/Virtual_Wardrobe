@@ -1,9 +1,9 @@
 package com.virtualwardrobe.backend.domain;
 
 public enum Category {
-    HEAD,
-    TOP,
-    BOTTOM,
-    SHOES,
-    ACCESSORIES
+  HEAD,
+  TOP,
+  BOTTOM,
+  SHOES,
+  ACCESSORIES
 }

@@ -3,3 +3,7 @@ spring:
     open-in-view: false
   application:
     name: backend
+
+jwt:
+  secret: YmFyZHpvVGFqbnlJRGx1Z2lLbHVjelNla3JldG55RG9KV1QxMjM0NTY3ODkw
+  expiration: 86400000
