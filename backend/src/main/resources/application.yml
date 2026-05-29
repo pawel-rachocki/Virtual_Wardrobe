@@ -7,3 +7,7 @@ spring:
 jwt:
   secret: YmFyZHpvVGFqbnlJRGx1Z2lLbHVjelNla3JldG55RG9KV1QxMjM0NTY3ODkw
   expiration: 86400000
+
+server:
+  error:
+    include-message: always
