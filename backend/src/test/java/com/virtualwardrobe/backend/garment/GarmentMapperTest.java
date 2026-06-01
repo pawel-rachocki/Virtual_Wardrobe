@@ -1,21 +1,41 @@
 package com.virtualwardrobe.backend.garment;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 
 import com.virtualwardrobe.backend.domain.Category;
 import com.virtualwardrobe.backend.domain.Garment;
 import com.virtualwardrobe.backend.domain.Tag;
 import com.virtualwardrobe.backend.garment.dto.GarmentResponse;
+import com.virtualwardrobe.backend.storage.StorageService;
 import java.util.Set;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class GarmentMapperTest {
 
-  private final GarmentMapper mapper = new GarmentMapper();
+  @Mock private StorageService storageService;
+
+  private GarmentMapper mapper;
+
+  @BeforeEach
+  void setUp() {
+    mapper = new GarmentMapper(storageService);
+    lenient()
+        .when(storageService.buildPublicUrl("abc.png"))
+        .thenReturn("http://minio/wardrobe/abc.png");
+    lenient()
+        .when(storageService.buildPublicUrl("x.png"))
+        .thenReturn("http://minio/wardrobe/x.png");
+  }
 
   @Test
-  void toResponse_mapujePolaSkalarneITagi() {
+  void toResponse_budujeUrlZKluczaIMapujeTagi() {
     Tag tag = Tag.builder().name("casual").build();
     Garment garment =
         Garment.builder()
@@ -25,7 +45,7 @@ class GarmentMapperTest {
             .color("red")
             .season("summer")
             .category(Category.TOP)
-            .imageUrl("http://minio/wardrobe/abc.png")
+            .imageUrl("abc.png")
             .tags(Set.of(tag))
             .build();
 
@@ -48,7 +68,7 @@ class GarmentMapperTest {
             .color("blue")
             .season("all")
             .category(Category.BOTTOM)
-            .imageUrl("http://minio/wardrobe/x.png")
+            .imageUrl("x.png")
             .tags(null)
             .build();
 

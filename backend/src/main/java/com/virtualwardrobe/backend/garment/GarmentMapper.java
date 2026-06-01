@@ -4,12 +4,19 @@ import com.virtualwardrobe.backend.domain.Garment;
 import com.virtualwardrobe.backend.domain.Tag;
 import com.virtualwardrobe.backend.garment.dto.GarmentRequest;
 import com.virtualwardrobe.backend.garment.dto.GarmentResponse;
+import com.virtualwardrobe.backend.storage.StorageService;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GarmentMapper {
+
+  private final StorageService storageService;
+
+  public GarmentMapper(StorageService storageService) {
+    this.storageService = storageService;
+  }
 
   /**
    * Mapuje tylko pola skalarne. {@code user}, {@code imageUrl} i {@code tags} ustawia serwis
@@ -38,7 +45,7 @@ public class GarmentMapper {
         garment.getColor(),
         garment.getSeason(),
         garment.getCategory(),
-        garment.getImageUrl(),
+        storageService.buildPublicUrl(garment.getImageUrl()),
         tagNames);
   }
 }

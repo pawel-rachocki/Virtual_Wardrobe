@@ -42,6 +42,11 @@ public class StorageService {
     return key;
   }
 
+  /** Buduje publiczny URL obiektu na podstawie jego klucza (SPEC §8: publiczne URL-e MVP). */
+  public String buildPublicUrl(String key) {
+    return storageProperties.getPublicBaseUrl() + "/" + key;
+  }
+
   public void delete(String key) {
     try {
       minioClient.removeObject(
