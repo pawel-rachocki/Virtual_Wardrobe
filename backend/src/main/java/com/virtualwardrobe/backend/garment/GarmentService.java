@@ -1,5 +1,6 @@
 package com.virtualwardrobe.backend.garment;
 
+import com.virtualwardrobe.backend.domain.Category;
 import com.virtualwardrobe.backend.domain.Garment;
 import com.virtualwardrobe.backend.domain.Tag;
 import com.virtualwardrobe.backend.domain.User;
@@ -42,11 +43,6 @@ public class GarmentService {
     this.garmentMapper = garmentMapper;
   }
 
-  /**
-   * Tworzy ubranie dla uzytkownika z tokenu (izolacja multi-tenant, SPEC §7): wysyla zdjecie do
-   * MinIO, zapisuje klucz w {@code image_url}, powiazuje tagi (Many-to-Many). Przy bledzie zapisu
-   * usuwa wgrany plik, by nie zostawic sieroty.
-   */
   @Transactional
   public GarmentResponse create(String userEmail, GarmentRequest request, MultipartFile image) {
     User user =
@@ -68,6 +64,20 @@ public class GarmentService {
       safeDelete(key);
       throw e;
     }
+  }
+
+  @Transactional(readOnly = true)
+  public List<GarmentResponse> list(String userEmail, Category category, String tag) {
+    User user =
+        userRepository
+            .findByEmail(userEmail)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+    String categoryName = category == null ? null : category.name();
+    return garmentRepository.findForUserFiltered(user.getId(), categoryName, tag).stream()
+        .map(garmentMapper::toResponse)
+        .toList();
   }
 
   /** Reuzywa istniejacy tag (wlasny lub globalny), preferujac wlasny; inaczej tworzy nowy usera. */

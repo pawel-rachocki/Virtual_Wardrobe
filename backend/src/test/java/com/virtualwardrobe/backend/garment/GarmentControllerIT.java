@@ -2,10 +2,12 @@ package com.virtualwardrobe.backend.garment;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,6 +19,7 @@ import com.virtualwardrobe.backend.repository.UserRepository;
 import com.virtualwardrobe.backend.security.JwtAuthenticationFilter;
 import com.virtualwardrobe.backend.security.JwtService;
 import com.virtualwardrobe.backend.security.SecurityConfig;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,61 @@ class GarmentControllerIT {
 
   private MockMultipartFile metadata(String json) {
     return new MockMultipartFile("metadata", "", MediaType.APPLICATION_JSON_VALUE, json.getBytes());
+  }
+
+  @Test
+  void list_zwraca200IListeZPrzekazanymiFiltrami() throws Exception {
+    when(garmentService.list(eq("pawel@example.com"), eq(Category.TOP), eq("casual")))
+        .thenReturn(
+            List.of(
+                new GarmentResponse(
+                    UUID.randomUUID(),
+                    "Tee",
+                    "Nike",
+                    "red",
+                    "summer",
+                    Category.TOP,
+                    "http://minio/wardrobe/uuid.png",
+                    Set.of("casual"))));
+
+    mockMvc
+        .perform(
+            get("/api/garments")
+                .param("category", "TOP")
+                .param("tag", "casual")
+                .with(user("pawel@example.com")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].name").value("Tee"))
+        .andExpect(jsonPath("$[0].tags[0]").value("casual"));
+
+    verify(garmentService).list("pawel@example.com", Category.TOP, "casual");
+  }
+
+  @Test
+  void list_przekazujeNullGdyBrakQueryParams() throws Exception {
+    when(garmentService.list(eq("pawel@example.com"), isNull(), isNull())).thenReturn(List.of());
+
+    mockMvc
+        .perform(get("/api/garments").with(user("pawel@example.com")))
+        .andExpect(status().isOk());
+
+    verify(garmentService).list("pawel@example.com", null, null);
+  }
+
+  @Test
+  void list_zwraca401GdyBrakAutentykacji() throws Exception {
+    mockMvc.perform(get("/api/garments")).andExpect(status().isUnauthorized());
+
+    verify(garmentService, never()).list(any(), any(), any());
+  }
+
+  @Test
+  void list_zwraca400GdyBlednaKategoria() throws Exception {
+    mockMvc
+        .perform(get("/api/garments").param("category", "FOO").with(user("pawel@example.com")))
+        .andExpect(status().isBadRequest());
+
+    verify(garmentService, never()).list(any(), any(), any());
   }
 
   @Test
