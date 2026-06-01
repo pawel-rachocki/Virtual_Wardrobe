@@ -137,4 +137,49 @@ class GarmentServiceTest {
 
     verify(storageService, never()).upload(any());
   }
+
+  @Test
+  void list_przekazujeUserIdIFiltryDoRepoIMapujeWynik() {
+    Garment garment = new Garment();
+    when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
+    when(garmentRepository.findForUserFiltered(user.getId(), "TOP", "casual"))
+        .thenReturn(List.of(garment));
+    GarmentResponse mapped =
+        new GarmentResponse(
+            UUID.randomUUID(),
+            "Tee",
+            "Nike",
+            "red",
+            "summer",
+            Category.TOP,
+            "url",
+            Set.of("casual"));
+    when(garmentMapper.toResponse(garment)).thenReturn(mapped);
+
+    List<GarmentResponse> result = garmentService.list("pawel@example.com", Category.TOP, "casual");
+
+    assertThat(result).containsExactly(mapped);
+    verify(garmentRepository).findForUserFiltered(user.getId(), "TOP", "casual");
+  }
+
+  @Test
+  void list_przekazujeNullowePrzyBrakuFiltrow() {
+    when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
+    when(garmentRepository.findForUserFiltered(user.getId(), null, null)).thenReturn(List.of());
+
+    List<GarmentResponse> result = garmentService.list("pawel@example.com", null, null);
+
+    assertThat(result).isEmpty();
+    verify(garmentRepository).findForUserFiltered(user.getId(), null, null);
+  }
+
+  @Test
+  void list_rzucaUnauthorizedGdyBrakUsera() {
+    when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> garmentService.list("ghost@example.com", null, null))
+        .isInstanceOf(ResponseStatusException.class);
+
+    verify(garmentRepository, never()).findForUserFiltered(any(), any(), any());
+  }
 }

@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "garments")
@@ -41,6 +43,7 @@ public class Garment {
   private String season;
 
   @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(nullable = false, columnDefinition = "category")
   private Category category;
 

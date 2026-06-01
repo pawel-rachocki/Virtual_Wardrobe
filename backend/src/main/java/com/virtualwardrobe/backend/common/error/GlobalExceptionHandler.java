@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,5 +28,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleUnreadable(HttpMessageNotReadableException ex) {
     return ResponseEntity.badRequest()
         .body(new ApiError(HttpStatus.BAD_REQUEST.value(), "Malformed request body", Map.of()));
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    String message = "Invalid value for parameter '" + ex.getName() + "'";
+    return ResponseEntity.badRequest()
+        .body(new ApiError(HttpStatus.BAD_REQUEST.value(), message, Map.of()));
   }
 }

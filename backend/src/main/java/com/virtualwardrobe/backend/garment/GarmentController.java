@@ -1,14 +1,18 @@
 package com.virtualwardrobe.backend.garment;
 
+import com.virtualwardrobe.backend.domain.Category;
 import com.virtualwardrobe.backend.garment.dto.GarmentRequest;
 import com.virtualwardrobe.backend.garment.dto.GarmentResponse;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +25,14 @@ public class GarmentController {
 
   public GarmentController(GarmentService garmentService) {
     this.garmentService = garmentService;
+  }
+
+  @GetMapping
+  public ResponseEntity<List<GarmentResponse>> list(
+      Authentication authentication,
+      @RequestParam(required = false) Category category,
+      @RequestParam(required = false) String tag) {
+    return ResponseEntity.ok(garmentService.list(authentication.getName(), category, tag));
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
