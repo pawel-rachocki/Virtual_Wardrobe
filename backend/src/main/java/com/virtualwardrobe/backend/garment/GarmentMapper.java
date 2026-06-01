@@ -32,6 +32,19 @@ public class GarmentMapper {
         .build();
   }
 
+  /**
+   * Nadpisuje pola skalarne istniejacej encji wartosciami z requestu (edycja #23). {@code tags},
+   * {@code imageUrl} i {@code user} pozostaja poza mapperem — tagi ustawia serwis, a zdjecia i
+   * wlasciciela edycja metadanych nie zmienia.
+   */
+  public void updateEntity(Garment target, GarmentRequest request) {
+    target.setName(request.name());
+    target.setBrand(request.brand());
+    target.setColor(request.color());
+    target.setSeason(request.season());
+    target.setCategory(request.category());
+  }
+
   public GarmentResponse toResponse(Garment garment) {
     Set<String> tagNames =
         garment.getTags() == null

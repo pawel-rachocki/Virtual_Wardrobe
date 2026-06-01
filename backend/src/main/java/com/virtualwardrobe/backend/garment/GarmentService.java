@@ -13,6 +13,7 @@ import com.virtualwardrobe.backend.storage.StorageService;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -64,6 +65,27 @@ public class GarmentService {
       safeDelete(key);
       throw e;
     }
+  }
+
+  @Transactional
+  public GarmentResponse update(String userEmail, UUID id, GarmentRequest request) {
+    User user =
+        userRepository
+            .findByEmail(userEmail)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+    Garment garment =
+        garmentRepository
+            .findByIdAndUserId(id, user.getId())
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"));
+
+    garmentMapper.updateEntity(garment, request);
+    garment.setTags(resolveTags(request.tags(), user));
+
+    Garment saved = garmentRepository.save(garment);
+    return garmentMapper.toResponse(saved);
   }
 
   @Transactional(readOnly = true)

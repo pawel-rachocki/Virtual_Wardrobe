@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,10 +27,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 @WebMvcTest(GarmentController.class)
 @Import({SecurityConfig.class, JwtAuthenticationFilter.class, JwtService.class})
@@ -161,5 +164,108 @@ class GarmentControllerIT {
         .andExpect(status().isUnauthorized());
 
     verify(garmentService, never()).create(any(), any(), any());
+  }
+
+  @Test
+  void update_zwraca200IZaktualizowaneBody() throws Exception {
+    UUID id = UUID.randomUUID();
+    when(garmentService.update(eq("pawel@example.com"), eq(id), any(GarmentRequest.class)))
+        .thenReturn(
+            new GarmentResponse(
+                id,
+                "Tee v2",
+                "Nike",
+                "blue",
+                "winter",
+                Category.TOP,
+                "http://minio/wardrobe/uuid.png",
+                Set.of("sport")));
+
+    String json =
+        "{\"name\":\"Tee v2\",\"brand\":\"Nike\",\"color\":\"blue\",\"season\":\"winter\","
+            + "\"category\":\"TOP\",\"tags\":[\"sport\"]}";
+
+    mockMvc
+        .perform(
+            put("/api/garments/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(user("pawel@example.com")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Tee v2"))
+        .andExpect(jsonPath("$.color").value("blue"))
+        .andExpect(jsonPath("$.tags[0]").value("sport"));
+
+    verify(garmentService).update(eq("pawel@example.com"), eq(id), any(GarmentRequest.class));
+  }
+
+  @Test
+  void update_zwraca400GdyWiecejNiz3Tagi() throws Exception {
+    UUID id = UUID.randomUUID();
+    String json =
+        "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
+            + "\"category\":\"TOP\",\"tags\":[\"a\",\"b\",\"c\",\"d\"]}";
+
+    mockMvc
+        .perform(
+            put("/api/garments/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(user("pawel@example.com")))
+        .andExpect(status().isBadRequest());
+
+    verify(garmentService, never()).update(any(), any(), any());
+  }
+
+  @Test
+  void update_zwraca400GdyBlednaKategoria() throws Exception {
+    UUID id = UUID.randomUUID();
+    String json =
+        "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
+            + "\"category\":\"FOO\",\"tags\":[]}";
+
+    mockMvc
+        .perform(
+            put("/api/garments/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(user("pawel@example.com")))
+        .andExpect(status().isBadRequest());
+
+    verify(garmentService, never()).update(any(), any(), any());
+  }
+
+  @Test
+  void update_zwraca404GdyCudzeLubNieistniejaceUbranie() throws Exception {
+    UUID id = UUID.randomUUID();
+    when(garmentService.update(eq("pawel@example.com"), eq(id), any(GarmentRequest.class)))
+        .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"));
+
+    String json =
+        "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
+            + "\"category\":\"TOP\",\"tags\":[]}";
+
+    mockMvc
+        .perform(
+            put("/api/garments/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(user("pawel@example.com")))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void update_zwraca401GdyBrakAutentykacji() throws Exception {
+    UUID id = UUID.randomUUID();
+    String json =
+        "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
+            + "\"category\":\"TOP\",\"tags\":[]}";
+
+    mockMvc
+        .perform(
+            put("/api/garments/{id}", id).contentType(MediaType.APPLICATION_JSON).content(json))
+        .andExpect(status().isUnauthorized());
+
+    verify(garmentService, never()).update(any(), any(), any());
   }
 }
