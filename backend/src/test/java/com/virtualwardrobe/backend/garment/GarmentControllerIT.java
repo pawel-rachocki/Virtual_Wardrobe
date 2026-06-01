@@ -284,7 +284,8 @@ class GarmentControllerIT {
   @Test
   void delete_zwraca404GdyCudzeLubNieistniejaceUbranie() throws Exception {
     UUID id = UUID.randomUUID();
-    org.mockito.Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"))
+    org.mockito.Mockito.doThrow(
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"))
         .when(garmentService)
         .delete("pawel@example.com", id);
 
@@ -297,9 +298,7 @@ class GarmentControllerIT {
   void delete_zwraca401GdyBrakAutentykacji() throws Exception {
     UUID id = UUID.randomUUID();
 
-    mockMvc
-        .perform(delete("/api/garments/{id}", id))
-        .andExpect(status().isUnauthorized());
+    mockMvc.perform(delete("/api/garments/{id}", id)).andExpect(status().isUnauthorized());
 
     verify(garmentService, never()).delete(any(), any());
   }

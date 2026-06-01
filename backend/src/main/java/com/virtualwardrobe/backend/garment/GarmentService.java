@@ -127,13 +127,15 @@ public class GarmentService {
       return tags;
     }
     for (String name : names) {
-      List<Tag> existing = tagRepository.findByNameForUser(name, user.getId());
+      String normalized = name.trim().toLowerCase();
+      List<Tag> existing = tagRepository.findByNameForUser(normalized, user.getId());
       Tag tag =
           existing.stream()
               .filter(t -> t.getUser() != null)
               .findFirst()
               .or(() -> existing.stream().findFirst())
-              .orElseGet(() -> tagRepository.save(Tag.builder().name(name).user(user).build()));
+              .orElseGet(
+                  () -> tagRepository.save(Tag.builder().name(normalized).user(user).build()));
       tags.add(tag);
     }
     return tags;
