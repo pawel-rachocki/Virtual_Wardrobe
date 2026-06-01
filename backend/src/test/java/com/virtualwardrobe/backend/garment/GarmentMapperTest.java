@@ -6,6 +6,7 @@ import static org.mockito.Mockito.lenient;
 import com.virtualwardrobe.backend.domain.Category;
 import com.virtualwardrobe.backend.domain.Garment;
 import com.virtualwardrobe.backend.domain.Tag;
+import com.virtualwardrobe.backend.garment.dto.GarmentRequest;
 import com.virtualwardrobe.backend.garment.dto.GarmentResponse;
 import com.virtualwardrobe.backend.storage.StorageService;
 import java.util.Set;
@@ -75,5 +76,34 @@ class GarmentMapperTest {
     GarmentResponse response = mapper.toResponse(garment);
 
     assertThat(response.tags()).isEmpty();
+  }
+
+  @Test
+  void updateEntity_nadpisujePolaSkalarneNieRuszajacTagowIZdjecia() {
+    Tag tag = Tag.builder().name("casual").build();
+    Garment garment =
+        Garment.builder()
+            .id(UUID.randomUUID())
+            .name("Tee")
+            .brand("Nike")
+            .color("red")
+            .season("summer")
+            .category(Category.TOP)
+            .imageUrl("abc.png")
+            .tags(Set.of(tag))
+            .build();
+    GarmentRequest request =
+        new GarmentRequest(
+            "Tee v2", "Adidas", "blue", "winter", Category.BOTTOM, Set.of("ignored"));
+
+    mapper.updateEntity(garment, request);
+
+    assertThat(garment.getName()).isEqualTo("Tee v2");
+    assertThat(garment.getBrand()).isEqualTo("Adidas");
+    assertThat(garment.getColor()).isEqualTo("blue");
+    assertThat(garment.getSeason()).isEqualTo("winter");
+    assertThat(garment.getCategory()).isEqualTo(Category.BOTTOM);
+    assertThat(garment.getImageUrl()).isEqualTo("abc.png");
+    assertThat(garment.getTags()).containsExactly(tag);
   }
 }

@@ -106,6 +106,36 @@ class GarmentRepositoryIT extends AbstractPostgresIT {
     assertThat(result).extracting(Garment::getId).doesNotHaveDuplicates();
   }
 
+  @Test
+  void findByIdAndUserId_zwracaWlasneUbranieZTagami() {
+    UUID betaId = garmentIdByName("Beta");
+
+    Garment result = garmentRepository.findByIdAndUserId(betaId, userAId).orElseThrow();
+
+    assertThat(result.getName()).isEqualTo("Beta");
+    assertThat(result.getTags())
+        .extracting(Tag::getName)
+        .containsExactlyInAnyOrder("casual", "sport");
+  }
+
+  @Test
+  void findByIdAndUserId_pustyGdyUbranieNalezyDoInnegoUsera() {
+    UUID zetaId = garmentIdByName("Zeta");
+
+    assertThat(garmentRepository.findByIdAndUserId(zetaId, userAId)).isEmpty();
+  }
+
+  @Test
+  void findByIdAndUserId_pustyGdyUbranieNieIstnieje() {
+    assertThat(garmentRepository.findByIdAndUserId(UUID.randomUUID(), userAId)).isEmpty();
+  }
+
+  private UUID garmentIdByName(String name) {
+    return em.createQuery("SELECT g.id FROM Garment g WHERE g.name = :name", UUID.class)
+        .setParameter("name", name)
+        .getSingleResult();
+  }
+
   private User persistUser(String email) {
     User user = User.builder().email(email).passwordHash("hash").build();
     em.persist(user);

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.virtualwardrobe.backend.domain.Category;
@@ -136,6 +137,61 @@ class GarmentServiceTest {
         .isInstanceOf(ResponseStatusException.class);
 
     verify(storageService, never()).upload(any());
+  }
+
+  @Test
+  void update_aktualizujePolaITagiNieRuszajacZdjeciaIWlasciciela() {
+    UUID id = UUID.randomUUID();
+    GarmentRequest req = request(Set.of("sport"));
+    Garment existing =
+        Garment.builder().id(id).user(user).imageUrl("orig.png").category(Category.SHOES).build();
+    Tag sport = Tag.builder().id(UUID.randomUUID()).name("sport").user(user).build();
+
+    when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
+    when(garmentRepository.findByIdAndUserId(id, user.getId())).thenReturn(Optional.of(existing));
+    when(tagRepository.findByNameForUser("sport", user.getId())).thenReturn(List.of(sport));
+    when(garmentRepository.save(any(Garment.class))).thenAnswer(inv -> inv.getArgument(0));
+    GarmentResponse mapped =
+        new GarmentResponse(
+            id, "Tee", "Nike", "red", "summer", Category.TOP, "url", Set.of("sport"));
+    when(garmentMapper.toResponse(existing)).thenReturn(mapped);
+
+    GarmentResponse result = garmentService.update("pawel@example.com", id, req);
+
+    assertThat(result).isEqualTo(mapped);
+    verify(garmentMapper).updateEntity(existing, req);
+    ArgumentCaptor<Garment> captor = ArgumentCaptor.forClass(Garment.class);
+    verify(garmentRepository).save(captor.capture());
+    Garment saved = captor.getValue();
+    assertThat(saved.getUser()).isEqualTo(user);
+    assertThat(saved.getImageUrl()).isEqualTo("orig.png");
+    assertThat(saved.getTags()).containsExactly(sport);
+    verifyNoInteractions(storageService);
+  }
+
+  @Test
+  void update_rzucaNotFoundGdyUbranieCudzeLubNieistnieje() {
+    UUID id = UUID.randomUUID();
+    when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
+    when(garmentRepository.findByIdAndUserId(id, user.getId())).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> garmentService.update("pawel@example.com", id, request(Set.of())))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("404");
+
+    verify(garmentRepository, never()).save(any());
+  }
+
+  @Test
+  void update_rzucaUnauthorizedGdyBrakUsera() {
+    UUID id = UUID.randomUUID();
+    when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> garmentService.update("ghost@example.com", id, request(Set.of())))
+        .isInstanceOf(ResponseStatusException.class);
+
+    verify(garmentRepository, never()).findByIdAndUserId(any(), any());
+    verify(garmentRepository, never()).save(any());
   }
 
   @Test
