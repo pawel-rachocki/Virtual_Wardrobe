@@ -88,6 +88,24 @@ public class GarmentService {
     return garmentMapper.toResponse(saved);
   }
 
+  @Transactional
+  public void delete(String userEmail, UUID id) {
+    User user =
+        userRepository
+            .findByEmail(userEmail)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+    Garment garment =
+        garmentRepository
+            .findByIdAndUserId(id, user.getId())
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"));
+
+    garmentRepository.delete(garment);
+    safeDelete(garment.getImageUrl());
+  }
+
   @Transactional(readOnly = true)
   public List<GarmentResponse> list(String userEmail, Category category, String tag) {
     User user =

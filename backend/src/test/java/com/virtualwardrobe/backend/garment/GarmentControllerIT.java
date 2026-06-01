@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -267,5 +268,39 @@ class GarmentControllerIT {
         .andExpect(status().isUnauthorized());
 
     verify(garmentService, never()).update(any(), any(), any());
+  }
+
+  @Test
+  void delete_zwraca204GdyWlasciciel() throws Exception {
+    UUID id = UUID.randomUUID();
+
+    mockMvc
+        .perform(delete("/api/garments/{id}", id).with(user("pawel@example.com")))
+        .andExpect(status().isNoContent());
+
+    verify(garmentService).delete("pawel@example.com", id);
+  }
+
+  @Test
+  void delete_zwraca404GdyCudzeLubNieistniejaceUbranie() throws Exception {
+    UUID id = UUID.randomUUID();
+    org.mockito.Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"))
+        .when(garmentService)
+        .delete("pawel@example.com", id);
+
+    mockMvc
+        .perform(delete("/api/garments/{id}", id).with(user("pawel@example.com")))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void delete_zwraca401GdyBrakAutentykacji() throws Exception {
+    UUID id = UUID.randomUUID();
+
+    mockMvc
+        .perform(delete("/api/garments/{id}", id))
+        .andExpect(status().isUnauthorized());
+
+    verify(garmentService, never()).delete(any(), any());
   }
 }

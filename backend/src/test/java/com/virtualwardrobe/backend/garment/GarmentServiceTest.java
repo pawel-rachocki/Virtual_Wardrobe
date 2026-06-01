@@ -195,6 +195,61 @@ class GarmentServiceTest {
   }
 
   @Test
+  void delete_usuwaRekordIWolaStorageDelete() {
+    UUID id = UUID.randomUUID();
+    Garment garment = Garment.builder().id(id).user(user).imageUrl("uuid.png").build();
+    when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
+    when(garmentRepository.findByIdAndUserId(id, user.getId())).thenReturn(Optional.of(garment));
+
+    garmentService.delete("pawel@example.com", id);
+
+    verify(garmentRepository).delete(garment);
+    verify(storageService).delete("uuid.png");
+  }
+
+  @Test
+  void delete_rzucaNotFoundGdyUbranieNiePrzypisaneDoUsera() {
+    UUID id = UUID.randomUUID();
+    when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
+    when(garmentRepository.findByIdAndUserId(id, user.getId())).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> garmentService.delete("pawel@example.com", id))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("404");
+
+    verify(garmentRepository, never()).delete(any(Garment.class));
+    verify(storageService, never()).delete(any());
+  }
+
+  @Test
+  void delete_rzucaUnauthorizedGdyBrakUsera() {
+    UUID id = UUID.randomUUID();
+    when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> garmentService.delete("ghost@example.com", id))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("401");
+
+    verify(garmentRepository, never()).findByIdAndUserId(any(), any());
+    verify(garmentRepository, never()).delete(any(Garment.class));
+  }
+
+  @Test
+  void delete_usuwaRekordNawetGdyStorageDeleteFail() {
+    UUID id = UUID.randomUUID();
+    Garment garment = Garment.builder().id(id).user(user).imageUrl("uuid.png").build();
+    when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
+    when(garmentRepository.findByIdAndUserId(id, user.getId())).thenReturn(Optional.of(garment));
+    org.mockito.Mockito.doThrow(new RuntimeException("minio down"))
+        .when(storageService)
+        .delete("uuid.png");
+
+    garmentService.delete("pawel@example.com", id);
+
+    verify(garmentRepository).delete(garment);
+  }
+
+  @Test
   void list_przekazujeUserIdIFiltryDoRepoIMapujeWynik() {
     Garment garment = new Garment();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
