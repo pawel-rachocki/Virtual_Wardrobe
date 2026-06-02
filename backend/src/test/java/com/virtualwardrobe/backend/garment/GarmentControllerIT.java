@@ -53,7 +53,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void list_zwraca200IListeZPrzekazanymiFiltrami() throws Exception {
+  void list_returns200WithListAndPassedFilters() throws Exception {
     when(garmentService.list(eq("pawel@example.com"), eq(Category.TOP), eq("casual")))
         .thenReturn(
             List.of(
@@ -81,7 +81,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void list_przekazujeNullGdyBrakQueryParams() throws Exception {
+  void list_passesNullWhenNoQueryParams() throws Exception {
     when(garmentService.list(eq("pawel@example.com"), isNull(), isNull())).thenReturn(List.of());
 
     mockMvc
@@ -92,14 +92,14 @@ class GarmentControllerIT {
   }
 
   @Test
-  void list_zwraca401GdyBrakAutentykacji() throws Exception {
+  void list_returns401WhenNotAuthenticated() throws Exception {
     mockMvc.perform(get("/api/garments")).andExpect(status().isUnauthorized());
 
     verify(garmentService, never()).list(any(), any(), any());
   }
 
   @Test
-  void list_zwraca400GdyBlednaKategoria() throws Exception {
+  void list_returns400WhenInvalidCategory() throws Exception {
     mockMvc
         .perform(get("/api/garments").param("category", "FOO").with(user("pawel@example.com")))
         .andExpect(status().isBadRequest());
@@ -108,7 +108,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void create_zwraca201IBodyGdyPoprawneDane() throws Exception {
+  void create_returns201WithBodyWhenValidData() throws Exception {
     when(garmentService.create(eq("pawel@example.com"), any(GarmentRequest.class), any()))
         .thenReturn(
             new GarmentResponse(
@@ -138,7 +138,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void create_zwraca400GdyWiecejNiz3Tagi() throws Exception {
+  void create_returns400WhenMoreThan3Tags() throws Exception {
     String json =
         "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
             + "\"category\":\"TOP\",\"tags\":[\"a\",\"b\",\"c\",\"d\"]}";
@@ -155,7 +155,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void create_zwraca401GdyBrakAutentykacji() throws Exception {
+  void create_returns401WhenNotAuthenticated() throws Exception {
     String json =
         "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
             + "\"category\":\"TOP\",\"tags\":[]}";
@@ -168,7 +168,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void update_zwraca200IZaktualizowaneBody() throws Exception {
+  void update_returns200WithUpdatedBody() throws Exception {
     UUID id = UUID.randomUUID();
     when(garmentService.update(eq("pawel@example.com"), eq(id), any(GarmentRequest.class)))
         .thenReturn(
@@ -201,7 +201,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void update_zwraca400GdyWiecejNiz3Tagi() throws Exception {
+  void update_returns400WhenMoreThan3Tags() throws Exception {
     UUID id = UUID.randomUUID();
     String json =
         "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
@@ -219,7 +219,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void update_zwraca400GdyBlednaKategoria() throws Exception {
+  void update_returns400WhenInvalidCategory() throws Exception {
     UUID id = UUID.randomUUID();
     String json =
         "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
@@ -237,7 +237,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void update_zwraca404GdyCudzeLubNieistniejaceUbranie() throws Exception {
+  void update_returns404WhenGarmentNotFound() throws Exception {
     UUID id = UUID.randomUUID();
     when(garmentService.update(eq("pawel@example.com"), eq(id), any(GarmentRequest.class)))
         .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"));
@@ -256,7 +256,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void update_zwraca401GdyBrakAutentykacji() throws Exception {
+  void update_returns401WhenNotAuthenticated() throws Exception {
     UUID id = UUID.randomUUID();
     String json =
         "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
@@ -271,7 +271,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void delete_zwraca204GdyWlasciciel() throws Exception {
+  void delete_returns204WhenOwner() throws Exception {
     UUID id = UUID.randomUUID();
 
     mockMvc
@@ -282,7 +282,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void delete_zwraca404GdyCudzeLubNieistniejaceUbranie() throws Exception {
+  void delete_returns404WhenGarmentNotFound() throws Exception {
     UUID id = UUID.randomUUID();
     org.mockito.Mockito.doThrow(
             new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"))
@@ -295,7 +295,7 @@ class GarmentControllerIT {
   }
 
   @Test
-  void delete_zwraca401GdyBrakAutentykacji() throws Exception {
+  void delete_returns401WhenNotAuthenticated() throws Exception {
     UUID id = UUID.randomUUID();
 
     mockMvc.perform(delete("/api/garments/{id}", id)).andExpect(status().isUnauthorized());

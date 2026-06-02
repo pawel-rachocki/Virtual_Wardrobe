@@ -39,7 +39,7 @@ class TagControllerIT {
   @MockitoBean private UserRepository userRepository;
 
   @Test
-  void list_zwraca200IListeTagow() throws Exception {
+  void list_returns200WithTagList() throws Exception {
     when(tagService.listForUser("pawel@example.com"))
         .thenReturn(
             List.of(
@@ -57,14 +57,14 @@ class TagControllerIT {
   }
 
   @Test
-  void list_zwraca401GdyBrakAutentykacji() throws Exception {
+  void list_returns401WhenNotAuthenticated() throws Exception {
     mockMvc.perform(get("/api/tags")).andExpect(status().isUnauthorized());
 
     verify(tagService, never()).listForUser(any());
   }
 
   @Test
-  void create_zwraca201INowyTag() throws Exception {
+  void create_returns201WithNewTag() throws Exception {
     UUID id = UUID.randomUUID();
     when(tagService.create(eq("pawel@example.com"), any(TagRequest.class)))
         .thenReturn(new TagResponse(id, "letni"));
@@ -81,7 +81,7 @@ class TagControllerIT {
   }
 
   @Test
-  void create_zwraca409GdyDuplikat() throws Exception {
+  void create_returns409WhenDuplicate() throws Exception {
     when(tagService.create(eq("pawel@example.com"), any(TagRequest.class)))
         .thenThrow(new ResponseStatusException(HttpStatus.CONFLICT, "Tag already exists"));
 
@@ -95,7 +95,7 @@ class TagControllerIT {
   }
 
   @Test
-  void create_zwraca400GdyPustaNazwa() throws Exception {
+  void create_returns400WhenNameIsBlank() throws Exception {
     mockMvc
         .perform(
             post("/api/tags")
@@ -108,7 +108,7 @@ class TagControllerIT {
   }
 
   @Test
-  void create_zwraca401GdyBrakAutentykacji() throws Exception {
+  void create_returns401WhenNotAuthenticated() throws Exception {
     mockMvc
         .perform(
             post("/api/tags")

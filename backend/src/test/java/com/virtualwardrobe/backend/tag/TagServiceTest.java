@@ -40,7 +40,7 @@ class TagServiceTest {
   }
 
   @Test
-  void listForUser_zwracaTaginSortowaneAlphabetycznie() {
+  void listForUser_returnsTagsSortedAlphabetically() {
     Tag lato = Tag.builder().id(UUID.randomUUID()).name("lato").build();
     Tag casual = Tag.builder().id(UUID.randomUUID()).name("casual").user(user).build();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
@@ -53,7 +53,7 @@ class TagServiceTest {
   }
 
   @Test
-  void listForUser_rzucaUnauthorizedGdyBrakUsera() {
+  void listForUser_throwsUnauthorizedWhenUserNotFound() {
     when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> tagService.listForUser("ghost@example.com"))
@@ -64,7 +64,7 @@ class TagServiceTest {
   }
 
   @Test
-  void create_tworzyTagZNazwaZnormalizowanaDoLowercase() {
+  void create_createsTagWithNameNormalizedToLowercase() {
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(tagRepository.findByNameForUser("mój styl", user.getId())).thenReturn(List.of());
     Tag saved = Tag.builder().id(UUID.randomUUID()).name("mój styl").user(user).build();
@@ -79,7 +79,7 @@ class TagServiceTest {
   }
 
   @Test
-  void create_rzuca409GdyDuplicatGlobalny() {
+  void create_throws409WhenGlobalTagDuplicate() {
     Tag global = Tag.builder().id(UUID.randomUUID()).name("casual").build();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(tagRepository.findByNameForUser("casual", user.getId())).thenReturn(List.of(global));
@@ -92,7 +92,7 @@ class TagServiceTest {
   }
 
   @Test
-  void create_rzuca409GdyDuplicatWlasny() {
+  void create_throws409WhenOwnTagDuplicate() {
     Tag own = Tag.builder().id(UUID.randomUUID()).name("letni").user(user).build();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(tagRepository.findByNameForUser("letni", user.getId())).thenReturn(List.of(own));
@@ -105,7 +105,7 @@ class TagServiceTest {
   }
 
   @Test
-  void create_rzuca409GdyNazwaMieszanaKolizujeZGlobalnym() {
+  void create_throws409WhenMixedCaseCollidesWithGlobalTag() {
     Tag global = Tag.builder().id(UUID.randomUUID()).name("casual").build();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(tagRepository.findByNameForUser("casual", user.getId())).thenReturn(List.of(global));
@@ -116,7 +116,7 @@ class TagServiceTest {
   }
 
   @Test
-  void create_rzucaUnauthorizedGdyBrakUsera() {
+  void create_throwsUnauthorizedWhenUserNotFound() {
     when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> tagService.create("ghost@example.com", new TagRequest("tag")))

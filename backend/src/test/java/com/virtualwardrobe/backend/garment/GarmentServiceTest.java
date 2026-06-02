@@ -60,7 +60,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void create_wgrywaPlikIZapisujeUbranieZUseremIKluczem() {
+  void create_uploadsFileAndSavesGarmentWithUserAndKey() {
     GarmentRequest req = request(Set.of("casual"));
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(storageService.upload(image)).thenReturn("uuid.png");
@@ -93,7 +93,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void create_reuzywaIstniejacegoTaguINieTworzyNowego() {
+  void create_reusesExistingTagAndDoesNotCreateNew() {
     GarmentRequest req = request(Set.of("casual"));
     Tag existing = Tag.builder().id(UUID.randomUUID()).name("casual").user(user).build();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
@@ -115,7 +115,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void create_usuwaWgranyPlikGdyZapisDoBazySieNiePowiedzie() {
+  void create_deletesUploadedFileWhenSaveToDbFails() {
     GarmentRequest req = request(Set.of());
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(storageService.upload(image)).thenReturn("uuid.png");
@@ -129,7 +129,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void create_rzucaUnauthorizedGdyBrakUseraINieWgrywaPliku() {
+  void create_throwsUnauthorizedWhenUserNotFoundAndDoesNotUpload() {
     GarmentRequest req = request(Set.of());
     when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
@@ -140,7 +140,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void update_aktualizujePolaITagiNieRuszajacZdjeciaIWlasciciela() {
+  void update_updatesFieldsAndTagsWithoutTouchingImageOrOwner() {
     UUID id = UUID.randomUUID();
     GarmentRequest req = request(Set.of("sport"));
     Garment existing =
@@ -170,7 +170,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void update_rzucaNotFoundGdyUbranieCudzeLubNieistnieje() {
+  void update_throwsNotFoundWhenGarmentNotOwnedOrDoesNotExist() {
     UUID id = UUID.randomUUID();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(garmentRepository.findByIdAndUserId(id, user.getId())).thenReturn(Optional.empty());
@@ -183,7 +183,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void update_rzucaUnauthorizedGdyBrakUsera() {
+  void update_throwsUnauthorizedWhenUserNotFound() {
     UUID id = UUID.randomUUID();
     when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
@@ -195,7 +195,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void delete_usuwaRekordIWolaStorageDelete() {
+  void delete_deletesRecordAndCallsStorageDelete() {
     UUID id = UUID.randomUUID();
     Garment garment = Garment.builder().id(id).user(user).imageUrl("uuid.png").build();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
@@ -208,7 +208,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void delete_rzucaNotFoundGdyUbranieNiePrzypisaneDoUsera() {
+  void delete_throwsNotFoundWhenGarmentNotOwnedByUser() {
     UUID id = UUID.randomUUID();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(garmentRepository.findByIdAndUserId(id, user.getId())).thenReturn(Optional.empty());
@@ -222,7 +222,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void delete_rzucaUnauthorizedGdyBrakUsera() {
+  void delete_throwsUnauthorizedWhenUserNotFound() {
     UUID id = UUID.randomUUID();
     when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
@@ -235,7 +235,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void delete_usuwaRekordNawetGdyStorageDeleteFail() {
+  void delete_deletesRecordEvenWhenStorageDeleteFails() {
     UUID id = UUID.randomUUID();
     Garment garment = Garment.builder().id(id).user(user).imageUrl("uuid.png").build();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
@@ -250,7 +250,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void list_przekazujeUserIdIFiltryDoRepoIMapujeWynik() {
+  void list_passesUserIdAndFiltersToRepositoryAndMapsResult() {
     Garment garment = new Garment();
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(garmentRepository.findForUserFiltered(user.getId(), "TOP", "casual"))
@@ -274,7 +274,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void list_przekazujeNullowePrzyBrakuFiltrow() {
+  void list_passesNullFiltersWhenNoFiltersProvided() {
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
     when(garmentRepository.findForUserFiltered(user.getId(), null, null)).thenReturn(List.of());
 
@@ -285,7 +285,7 @@ class GarmentServiceTest {
   }
 
   @Test
-  void list_rzucaUnauthorizedGdyBrakUsera() {
+  void list_throwsUnauthorizedWhenUserNotFound() {
     when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> garmentService.list("ghost@example.com", null, null))
