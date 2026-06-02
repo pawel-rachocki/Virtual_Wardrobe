@@ -77,8 +77,7 @@ class OutfitRequestValidationTest {
     OutfitRequest request = new OutfitRequest("Casual Friday", List.of());
 
     Set<ConstraintViolation<OutfitRequest>> violations = validator.validate(request);
-    assertThat(violations)
-        .anyMatch(v -> v.getPropertyPath().toString().equals("garmentIds"));
+    assertThat(violations).anyMatch(v -> v.getPropertyPath().toString().equals("garmentIds"));
   }
 
   @Test
