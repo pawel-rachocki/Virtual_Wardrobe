@@ -80,15 +80,11 @@ const Dashboard = () => {
 
       {/* ── Main ── */}
       <main className="max-w-5xl mx-auto px-6 sm:px-10 py-14 sm:py-20">
-
         {/* Page heading */}
         <div
           className={`mb-14 transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
         >
-          <p
-            style={{ letterSpacing: '0.24em' }}
-            className="text-xs uppercase text-[#C8906A] mb-4"
-          >
+          <p style={{ letterSpacing: '0.24em' }} className="text-xs uppercase text-[#C8906A] mb-4">
             My Collection
           </p>
           <h2
@@ -148,7 +144,10 @@ const Dashboard = () => {
                 >
                   Your closet awaits
                 </p>
-                <p style={{ letterSpacing: '0.03em' }} className="text-sm text-[#7A7570] font-light leading-relaxed">
+                <p
+                  style={{ letterSpacing: '0.03em' }}
+                  className="text-sm text-[#7A7570] font-light leading-relaxed"
+                >
                   Your clothing pieces will appear here. Start building your digital wardrobe.
                 </p>
               </div>
