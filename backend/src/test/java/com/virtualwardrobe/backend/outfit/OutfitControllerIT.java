@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -135,5 +136,35 @@ class OutfitControllerIT {
                 .content(json)
                 .with(user("pawel@example.com")))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void list_returns200WithBody() throws Exception {
+    when(outfitService.list("pawel@example.com")).thenReturn(List.of(stubResponse()));
+
+    mockMvc
+        .perform(get("/api/outfits").with(user("pawel@example.com")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].name").value("Casual Friday"));
+
+    verify(outfitService).list("pawel@example.com");
+  }
+
+  @Test
+  void list_returns401WhenNotAuthenticated() throws Exception {
+    mockMvc.perform(get("/api/outfits")).andExpect(status().isUnauthorized());
+
+    verify(outfitService, never()).list(any());
+  }
+
+  @Test
+  void list_returnsEmptyListWhenNoOutfits() throws Exception {
+    when(outfitService.list("pawel@example.com")).thenReturn(List.of());
+
+    mockMvc
+        .perform(get("/api/outfits").with(user("pawel@example.com")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
   }
 }

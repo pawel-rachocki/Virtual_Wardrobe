@@ -3,9 +3,11 @@ package com.virtualwardrobe.backend.outfit;
 import com.virtualwardrobe.backend.outfit.dto.OutfitRequest;
 import com.virtualwardrobe.backend.outfit.dto.OutfitResponse;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,12 @@ public class OutfitController {
 
   public OutfitController(OutfitService outfitService) {
     this.outfitService = outfitService;
+  }
+
+  @GetMapping
+  public ResponseEntity<List<OutfitResponse>> list(Authentication authentication) {
+    List<OutfitResponse> outfits = outfitService.list(authentication.getName());
+    return ResponseEntity.ok(outfits);
   }
 
   @PostMapping
