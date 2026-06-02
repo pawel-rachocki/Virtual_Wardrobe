@@ -92,7 +92,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   // --- CRUD ---
 
   @Test
-  void create_zwraca201ZPoprawnymiPolami() throws Exception {
+  void create_returns201WithCorrectFields() throws Exception {
     mockMvc
         .perform(
             multipart("/api/garments")
@@ -108,14 +108,14 @@ class GarmentCrudIT extends AbstractPostgresIT {
   }
 
   @Test
-  void create_zapisujeRekordWBazie() throws Exception {
+  void create_savesRecordInDatabase() throws Exception {
     postGarment(tokenA, BASE_JSON);
 
     assertThat(garmentRepository.findAll()).hasSize(1);
   }
 
   @Test
-  void list_zwracaUtworzoneUbranie() throws Exception {
+  void list_returnsCreatedGarment() throws Exception {
     postGarment(tokenA, BASE_JSON);
 
     mockMvc
@@ -126,7 +126,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   }
 
   @Test
-  void update_aktualizujePolaIZwraca200() throws Exception {
+  void update_updatesFieldsAndReturns200() throws Exception {
     UUID id = postGarment(tokenA, BASE_JSON);
     String updated =
         "{\"name\":\"Shirt\",\"brand\":\"Adidas\",\"color\":\"blue\",\"season\":\"winter\","
@@ -145,7 +145,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   }
 
   @Test
-  void delete_zwraca204IUsuwaRekordZBazy() throws Exception {
+  void delete_returns204AndRemovesFromDatabase() throws Exception {
     UUID id = postGarment(tokenA, BASE_JSON);
 
     mockMvc
@@ -159,7 +159,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   // --- multi-tenant isolation ---
 
   @Test
-  void list_userBNieWidziUbranUseraA() throws Exception {
+  void list_userBCannotSeeUserAGarments() throws Exception {
     postGarment(tokenA, BASE_JSON);
 
     mockMvc
@@ -169,7 +169,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   }
 
   @Test
-  void update_cudzaUbranieZwraca404() throws Exception {
+  void update_returns404WhenGarmentBelongsToAnotherUser() throws Exception {
     UUID id = postGarment(tokenA, BASE_JSON);
     String body =
         "{\"name\":\"X\",\"brand\":\"X\",\"color\":\"X\",\"season\":\"X\","
@@ -185,7 +185,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   }
 
   @Test
-  void delete_cudzaUbranieZwraca404() throws Exception {
+  void delete_returns404WhenGarmentBelongsToAnotherUser() throws Exception {
     UUID id = postGarment(tokenA, BASE_JSON);
 
     mockMvc
@@ -196,7 +196,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   // --- filtering ---
 
   @Test
-  void list_filtrCategory_zwracaTylkoPasujace() throws Exception {
+  void list_filterByCategory_returnsOnlyMatchingGarments() throws Exception {
     postGarment(tokenA, BASE_JSON); // TOP, casual
     String bottomJson =
         "{\"name\":\"Pants\",\"brand\":\"H&M\",\"color\":\"blue\",\"season\":\"summer\","
@@ -212,7 +212,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   }
 
   @Test
-  void list_filtrTag_zwracaTylkoPasujace() throws Exception {
+  void list_filterByTag_returnsOnlyMatchingGarments() throws Exception {
     postGarment(tokenA, BASE_JSON); // casual
     String sportJson =
         "{\"name\":\"Pants\",\"brand\":\"H&M\",\"color\":\"blue\",\"season\":\"summer\","
@@ -228,7 +228,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   }
 
   @Test
-  void list_filtrCategoryITag_zwracaPrzeciecie() throws Exception {
+  void list_filterByCategoryAndTag_returnsIntersection() throws Exception {
     postGarment(tokenA, BASE_JSON); // TOP, casual
     String bottomCasualJson =
         "{\"name\":\"Pants\",\"brand\":\"H&M\",\"color\":\"blue\",\"season\":\"summer\","
@@ -249,7 +249,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   // --- validation ---
 
   @Test
-  void create_wiecejNiz3Tagi_zwraca400() throws Exception {
+  void create_returns400WhenMoreThan3Tags() throws Exception {
     String json =
         "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
             + "\"category\":\"TOP\",\"tags\":[\"a\",\"b\",\"c\",\"d\"]}";
@@ -264,7 +264,7 @@ class GarmentCrudIT extends AbstractPostgresIT {
   }
 
   @Test
-  void create_blednaCategory_zwraca400() throws Exception {
+  void create_returns400WhenInvalidCategory() throws Exception {
     String json =
         "{\"name\":\"Tee\",\"brand\":\"Nike\",\"color\":\"red\",\"season\":\"summer\","
             + "\"category\":\"FOO\",\"tags\":[]}";
@@ -281,14 +281,14 @@ class GarmentCrudIT extends AbstractPostgresIT {
   // --- auth ---
 
   @Test
-  void create_bezJwt_zwraca401() throws Exception {
+  void create_returns401WhenNotAuthenticated() throws Exception {
     mockMvc
         .perform(multipart("/api/garments").file(image()).file(metadata(BASE_JSON)))
         .andExpect(status().isUnauthorized());
   }
 
   @Test
-  void list_bezJwt_zwraca401() throws Exception {
+  void list_returns401WhenNotAuthenticated() throws Exception {
     mockMvc.perform(get("/api/garments")).andExpect(status().isUnauthorized());
   }
 }

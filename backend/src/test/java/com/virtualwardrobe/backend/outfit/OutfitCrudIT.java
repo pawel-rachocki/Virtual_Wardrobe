@@ -3,6 +3,8 @@ package com.virtualwardrobe.backend.outfit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -10,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.virtualwardrobe.backend.domain.User;
+import com.virtualwardrobe.backend.repository.GarmentRepository;
 import com.virtualwardrobe.backend.repository.OutfitRepository;
 import com.virtualwardrobe.backend.repository.UserRepository;
 import com.virtualwardrobe.backend.security.JwtService;
@@ -38,6 +41,7 @@ class OutfitCrudIT extends AbstractPostgresIT {
   @Autowired private JwtService jwtService;
   @Autowired private UserRepository userRepository;
   @Autowired private OutfitRepository outfitRepository;
+  @Autowired private GarmentRepository garmentRepository;
 
   @MockitoBean private StorageService storageService;
   @MockitoBean private MinioClient minioClient;
@@ -84,6 +88,21 @@ class OutfitCrudIT extends AbstractPostgresIT {
     return UUID.fromString(id);
   }
 
+  private UUID createOutfit(String token, UUID garmentId) throws Exception {
+    String json = "{\"name\":\"Look\",\"garmentIds\":[\"" + garmentId + "\"]}";
+    MvcResult result =
+        mockMvc
+            .perform(
+                post("/api/outfits")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json)
+                    .header("Authorization", bearer(token)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+    return UUID.fromString(id);
+  }
+
   // --- create ---
 
   @Test
@@ -121,8 +140,6 @@ class OutfitCrudIT extends AbstractPostgresIT {
     assertThat(outfitRepository.findAll().get(0).getGarments()).hasSize(1);
   }
 
-  // --- multi-tenant isolation ---
-
   @Test
   void create_returns404WhenGarmentBelongsToAnotherUser() throws Exception {
     UUID garmentIdOfB = createGarment(tokenB);
@@ -139,7 +156,20 @@ class OutfitCrudIT extends AbstractPostgresIT {
     assertThat(outfitRepository.findAll()).isEmpty();
   }
 
-  // --- auth ---
+  @Test
+  void create_returns404WhenGarmentDoesNotExist() throws Exception {
+    String json = "{\"name\":\"Look\",\"garmentIds\":[\"" + UUID.randomUUID() + "\"]}";
+
+    mockMvc
+        .perform(
+            post("/api/outfits")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .header("Authorization", bearer(tokenA)))
+        .andExpect(status().isNotFound());
+
+    assertThat(outfitRepository.findAll()).isEmpty();
+  }
 
   @Test
   void create_returns401WhenNotAuthenticated() throws Exception {
@@ -148,5 +178,69 @@ class OutfitCrudIT extends AbstractPostgresIT {
     mockMvc
         .perform(post("/api/outfits").contentType(MediaType.APPLICATION_JSON).content(json))
         .andExpect(status().isUnauthorized());
+  }
+
+  // --- list ---
+
+  @Test
+  void list_returnsOutfitsOfAuthenticatedUser() throws Exception {
+    UUID garmentId = createGarment(tokenA);
+    createOutfit(tokenA, garmentId);
+
+    mockMvc
+        .perform(get("/api/outfits").header("Authorization", bearer(tokenA)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].name").value("Look"));
+  }
+
+  @Test
+  void list_userBCannotSeeOutfitsOfUserA() throws Exception {
+    UUID garmentId = createGarment(tokenA);
+    createOutfit(tokenA, garmentId);
+
+    mockMvc
+        .perform(get("/api/outfits").header("Authorization", bearer(tokenB)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  // --- delete ---
+
+  @Test
+  void delete_returns204AndRemovesOutfitFromDatabase() throws Exception {
+    UUID garmentId = createGarment(tokenA);
+    UUID outfitId = createOutfit(tokenA, garmentId);
+
+    mockMvc
+        .perform(delete("/api/outfits/{id}", outfitId).header("Authorization", bearer(tokenA)))
+        .andExpect(status().isNoContent());
+
+    assertThat(outfitRepository.findAll()).isEmpty();
+  }
+
+  @Test
+  void delete_returns404WhenOutfitBelongsToAnotherUser() throws Exception {
+    UUID garmentId = createGarment(tokenA);
+    UUID outfitId = createOutfit(tokenA, garmentId);
+
+    mockMvc
+        .perform(delete("/api/outfits/{id}", outfitId).header("Authorization", bearer(tokenB)))
+        .andExpect(status().isNotFound());
+
+    assertThat(outfitRepository.findAll()).hasSize(1);
+  }
+
+  @Test
+  void delete_preservesGarmentsAfterOutfitDeletion() throws Exception {
+    UUID garmentId = createGarment(tokenA);
+    UUID outfitId = createOutfit(tokenA, garmentId);
+
+    mockMvc
+        .perform(delete("/api/outfits/{id}", outfitId).header("Authorization", bearer(tokenA)))
+        .andExpect(status().isNoContent());
+
+    assertThat(outfitRepository.findAll()).isEmpty();
+    assertThat(garmentRepository.findAll()).hasSize(1);
   }
 }
