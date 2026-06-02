@@ -2,12 +2,9 @@ package com.virtualwardrobe.backend.outfit;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -40,6 +37,7 @@ class OutfitControllerIT {
   @MockitoBean private UserRepository userRepository;
 
   private static final UUID GARMENT_ID = UUID.randomUUID();
+  private static final UUID OUTFIT_ID = UUID.randomUUID();
 
   private OutfitResponse stubResponse() {
     return new OutfitResponse(UUID.randomUUID(), "Casual Friday", Instant.now(), List.of());
@@ -166,5 +164,30 @@ class OutfitControllerIT {
         .perform(get("/api/outfits").with(user("pawel@example.com")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
+  void delete_returns204() throws Exception {
+    mockMvc
+        .perform(delete("/api/outfits/" + OUTFIT_ID).with(user("pawel@example.com")))
+        .andExpect(status().isNoContent());
+    verify(outfitService).delete("pawel@example.com", OUTFIT_ID);
+  }
+
+  @Test
+  void delete_returns401WhenNotAuthenticated() throws Exception {
+    mockMvc.perform(delete("/api/outfits/" + OUTFIT_ID)).andExpect(status().isUnauthorized());
+    verify(outfitService, never()).delete(any(), any());
+  }
+
+  @Test
+  void delete_returns404WhenOutfitNotFound() throws Exception {
+    doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Outfit not found: " + OUTFIT_ID))
+        .when(outfitService)
+        .delete("pawel@example.com", OUTFIT_ID);
+
+    mockMvc
+        .perform(delete("/api/outfits/" + OUTFIT_ID).with(user("pawel@example.com")))
+        .andExpect(status().isNotFound());
   }
 }
