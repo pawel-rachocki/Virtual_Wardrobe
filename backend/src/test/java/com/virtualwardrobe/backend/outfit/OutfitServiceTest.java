@@ -139,7 +139,8 @@ class OutfitServiceTest {
     OutfitResponse response = stubResponse(outfit.getId());
 
     when(userRepository.findByEmail("pawel@example.com")).thenReturn(Optional.of(user));
-    when(outfitRepository.findAllByUserId(user.getId())).thenReturn(List.of(outfit));
+    when(outfitRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId()))
+        .thenReturn(List.of(outfit));
     when(outfitMapper.toResponse(outfit)).thenReturn(response);
 
     List<OutfitResponse> result = outfitService.list("pawel@example.com");
@@ -155,7 +156,7 @@ class OutfitServiceTest {
         .isInstanceOf(ResponseStatusException.class)
         .hasMessageContaining("401");
 
-    verify(outfitRepository, never()).findAllByUserId(any());
+    verify(outfitRepository, never()).findAllByUserIdOrderByCreatedAtDesc(any());
   }
 
   // --- delete ---

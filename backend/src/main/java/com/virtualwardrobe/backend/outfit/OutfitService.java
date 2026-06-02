@@ -60,7 +60,7 @@ public class OutfitService {
   @Transactional(readOnly = true)
   public List<OutfitResponse> list(String userEmail) {
     User user = resolveUser(userEmail);
-    return outfitRepository.findAllByUserId(user.getId()).stream()
+    return outfitRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId()).stream()
         .map(outfitMapper::toResponse)
         .toList();
   }
