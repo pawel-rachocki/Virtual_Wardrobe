@@ -36,7 +36,7 @@ class GarmentMapperTest {
   }
 
   @Test
-  void toResponse_budujeUrlZKluczaIMapujeTagi() {
+  void toResponse_buildsUrlFromKeyAndMapsTags() {
     Tag tag = Tag.builder().name("casual").build();
     Garment garment =
         Garment.builder()
@@ -60,7 +60,7 @@ class GarmentMapperTest {
   }
 
   @Test
-  void toResponse_zwracaPustyZbiorGdyTagiNull() {
+  void toResponse_returnsEmptyTagSetWhenTagsAreNull() {
     Garment garment =
         Garment.builder()
             .id(UUID.randomUUID())
@@ -79,7 +79,7 @@ class GarmentMapperTest {
   }
 
   @Test
-  void updateEntity_nadpisujePolaSkalarneNieRuszajacTagowIZdjecia() {
+  void updateEntity_overwritesScalarFieldsWithoutTouchingTagsOrImage() {
     Tag tag = Tag.builder().name("casual").build();
     Garment garment =
         Garment.builder()

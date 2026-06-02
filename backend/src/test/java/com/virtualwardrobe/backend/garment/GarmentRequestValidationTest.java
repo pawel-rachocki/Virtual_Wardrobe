@@ -34,7 +34,7 @@ class GarmentRequestValidationTest {
   }
 
   @Test
-  void przechodziGdyPoprawne() {
+  void passesWhenValid() {
     Set<ConstraintViolation<GarmentRequest>> violations =
         validator.validate(valid(Set.of("casual", "sport")));
 
@@ -42,7 +42,7 @@ class GarmentRequestValidationTest {
   }
 
   @Test
-  void odrzucaGdyWiecejNiz3Tagi() {
+  void rejectsWhenMoreThan3Tags() {
     Set<ConstraintViolation<GarmentRequest>> violations =
         validator.validate(valid(Set.of("a", "b", "c", "d")));
 
@@ -50,7 +50,7 @@ class GarmentRequestValidationTest {
   }
 
   @Test
-  void odrzucaGdyBrakNazwy() {
+  void rejectsWhenNameIsBlank() {
     GarmentRequest request =
         new GarmentRequest("  ", "Nike", "red", "summer", Category.TOP, Set.of());
 
@@ -60,7 +60,7 @@ class GarmentRequestValidationTest {
   }
 
   @Test
-  void odrzucaGdyBrakKategorii() {
+  void rejectsWhenCategoryIsNull() {
     GarmentRequest request = new GarmentRequest("Tee", "Nike", "red", "summer", null, Set.of());
 
     Set<ConstraintViolation<GarmentRequest>> violations = validator.validate(request);
