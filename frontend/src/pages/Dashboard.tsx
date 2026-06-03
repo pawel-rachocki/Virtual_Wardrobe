@@ -7,6 +7,7 @@ import GarmentGrid from '../components/garment/GarmentGrid'
 import CategoryFilter from '../components/garment/CategoryFilter'
 import AddGarmentModal from '../components/garment/AddGarmentModal'
 import EditGarmentModal from '../components/garment/EditGarmentModal'
+import DeleteConfirmDialog from '../components/garment/DeleteConfirmDialog'
 
 const Dashboard = () => {
   const navigate = useNavigate()
@@ -18,6 +19,7 @@ const Dashboard = () => {
   const [activeCategory, setActiveCategory] = useState<Category | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [editGarment, setEditGarment] = useState<Garment | null>(null)
+  const [deleteGarment, setDeleteGarment] = useState<Garment | null>(null)
 
   useEffect(() => {
     const link = document.createElement('link')
@@ -151,6 +153,7 @@ const Dashboard = () => {
             error={error}
             onRetry={handleRetry}
             onEdit={setEditGarment}
+            onDelete={setDeleteGarment}
           />
         </div>
       </main>
@@ -169,6 +172,16 @@ const Dashboard = () => {
           onClose={() => setEditGarment(null)}
           onSuccess={() => {
             setEditGarment(null)
+            setRefreshKey((k) => k + 1)
+          }}
+        />
+      )}
+      {deleteGarment && (
+        <DeleteConfirmDialog
+          garment={deleteGarment}
+          onClose={() => setDeleteGarment(null)}
+          onSuccess={() => {
+            setDeleteGarment(null)
             setRefreshKey((k) => k + 1)
           }}
         />

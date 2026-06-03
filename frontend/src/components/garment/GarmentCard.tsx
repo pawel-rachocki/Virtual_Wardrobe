@@ -24,11 +24,12 @@ interface GarmentCardProps {
   garment: Garment
   onClick?: () => void
   onEdit?: () => void
+  onDelete?: () => void
 }
 
 const MAX_TAGS = 3
 
-const GarmentCard = ({ garment, onClick, onEdit }: GarmentCardProps) => {
+const GarmentCard = ({ garment, onClick, onEdit, onDelete }: GarmentCardProps) => {
   const visibleTags = garment.tags.slice(0, MAX_TAGS)
   const overflowCount = garment.tags.length - MAX_TAGS
 
@@ -67,33 +68,68 @@ const GarmentCard = ({ garment, onClick, onEdit }: GarmentCardProps) => {
           {garment.category}
         </span>
 
-        {onEdit && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
-            }}
-            style={{
-              backgroundColor: 'rgba(250,248,245,0.92)',
-              border: '1px solid #E8E4DF',
-            }}
-            className="absolute bottom-3 right-3 p-2 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-[#FAF8F5]"
-            aria-label="Edytuj"
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#1A1A18"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-            </svg>
-          </button>
+        {(onEdit || onDelete) && (
+          <div className="absolute bottom-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            {onDelete && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete()
+                }}
+                style={{
+                  backgroundColor: 'rgba(250,248,245,0.92)',
+                  border: '1px solid #E8E4DF',
+                }}
+                className="p-2 rounded-sm hover:bg-red-50 hover:border-red-200 transition-colors duration-150"
+                aria-label="Usuń"
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#B91C1C"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14H6L5 6" />
+                  <path d="M10 11v6M14 11v6" />
+                  <path d="M9 6V4h6v2" />
+                </svg>
+              </button>
+            )}
+            {onEdit && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onEdit()
+                }}
+                style={{
+                  backgroundColor: 'rgba(250,248,245,0.92)',
+                  border: '1px solid #E8E4DF',
+                }}
+                className="p-2 rounded-sm hover:bg-[#FAF8F5] transition-colors duration-150"
+                aria-label="Edytuj"
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                </svg>
+              </button>
+            )}
+          </div>
         )}
       </div>
 

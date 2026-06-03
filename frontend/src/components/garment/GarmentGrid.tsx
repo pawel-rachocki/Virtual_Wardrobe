@@ -36,9 +36,10 @@ interface GarmentGridProps {
   error: string | null
   onRetry: () => void
   onEdit?: (garment: Garment) => void
+  onDelete?: (garment: Garment) => void
 }
 
-const GarmentGrid = ({ garments, loading, error, onRetry, onEdit }: GarmentGridProps) => {
+const GarmentGrid = ({ garments, loading, error, onRetry, onEdit, onDelete }: GarmentGridProps) => {
   if (loading) return <Spinner />
 
   if (error) {
@@ -94,6 +95,7 @@ const GarmentGrid = ({ garments, loading, error, onRetry, onEdit }: GarmentGridP
           key={garment.id}
           garment={garment}
           onEdit={onEdit ? () => onEdit(garment) : undefined}
+          onDelete={onDelete ? () => onDelete(garment) : undefined}
         />
       ))}
     </div>
