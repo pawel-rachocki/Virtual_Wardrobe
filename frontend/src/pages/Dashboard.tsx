@@ -6,6 +6,7 @@ import * as garmentService from '../services/garmentService'
 import GarmentGrid from '../components/garment/GarmentGrid'
 import CategoryFilter from '../components/garment/CategoryFilter'
 import AddGarmentModal from '../components/garment/AddGarmentModal'
+import EditGarmentModal from '../components/garment/EditGarmentModal'
 
 const Dashboard = () => {
   const navigate = useNavigate()
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0)
   const [activeCategory, setActiveCategory] = useState<Category | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [editGarment, setEditGarment] = useState<Garment | null>(null)
 
   useEffect(() => {
     const link = document.createElement('link')
@@ -143,7 +145,13 @@ const Dashboard = () => {
 
           <CategoryFilter active={activeCategory} onChange={handleCategoryChange} />
 
-          <GarmentGrid garments={garments} loading={loading} error={error} onRetry={handleRetry} />
+          <GarmentGrid
+            garments={garments}
+            loading={loading}
+            error={error}
+            onRetry={handleRetry}
+            onEdit={setEditGarment}
+          />
         </div>
       </main>
       {modalOpen && (
@@ -151,6 +159,16 @@ const Dashboard = () => {
           onClose={() => setModalOpen(false)}
           onSuccess={() => {
             setModalOpen(false)
+            setRefreshKey((k) => k + 1)
+          }}
+        />
+      )}
+      {editGarment && (
+        <EditGarmentModal
+          garment={editGarment}
+          onClose={() => setEditGarment(null)}
+          onSuccess={() => {
+            setEditGarment(null)
             setRefreshKey((k) => k + 1)
           }}
         />

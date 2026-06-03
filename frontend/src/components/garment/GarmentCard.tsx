@@ -23,11 +23,12 @@ const PlaceholderHanger = () => (
 interface GarmentCardProps {
   garment: Garment
   onClick?: () => void
+  onEdit?: () => void
 }
 
 const MAX_TAGS = 3
 
-const GarmentCard = ({ garment, onClick }: GarmentCardProps) => {
+const GarmentCard = ({ garment, onClick, onEdit }: GarmentCardProps) => {
   const visibleTags = garment.tags.slice(0, MAX_TAGS)
   const overflowCount = garment.tags.length - MAX_TAGS
 
@@ -40,7 +41,7 @@ const GarmentCard = ({ garment, onClick }: GarmentCardProps) => {
         cursor: onClick ? 'pointer' : 'default',
         transition: 'transform 200ms ease, box-shadow 200ms ease',
       }}
-      className="rounded-sm hover:-translate-y-1 hover:shadow-md"
+      className="group rounded-sm hover:-translate-y-1 hover:shadow-md"
     >
       {/* Image */}
       <div
@@ -65,6 +66,35 @@ const GarmentCard = ({ garment, onClick }: GarmentCardProps) => {
         >
           {garment.category}
         </span>
+
+        {onEdit && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit()
+            }}
+            style={{
+              backgroundColor: 'rgba(250,248,245,0.92)',
+              border: '1px solid #E8E4DF',
+            }}
+            className="absolute bottom-3 right-3 p-2 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-[#FAF8F5]"
+            aria-label="Edytuj"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#1A1A18"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Info */}
