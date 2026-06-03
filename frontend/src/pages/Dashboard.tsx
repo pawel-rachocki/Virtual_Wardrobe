@@ -5,6 +5,7 @@ import { Category } from '../types/garment'
 import * as garmentService from '../services/garmentService'
 import GarmentGrid from '../components/garment/GarmentGrid'
 import CategoryFilter from '../components/garment/CategoryFilter'
+import AddGarmentModal from '../components/garment/AddGarmentModal'
 
 const Dashboard = () => {
   const navigate = useNavigate()
@@ -14,6 +15,7 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [activeCategory, setActiveCategory] = useState<Category | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     const link = document.createElement('link')
@@ -128,19 +130,31 @@ const Dashboard = () => {
             <span style={{ letterSpacing: '0.18em' }} className="text-xs uppercase text-[#A09A93]">
               Clothing Items
             </span>
-            <span className="text-xs text-[#C8C4BE]">—</span>
+            <button onClick={() => setModalOpen(true)} className="relative group py-1">
+              <span
+                style={{ fontFamily: "'Jost', sans-serif", letterSpacing: '0.14em' }}
+                className="text-xs uppercase text-[#C8906A] group-hover:text-[#1A1A18] transition-colors duration-200"
+              >
+                + Dodaj ubranie
+              </span>
+              <span className="absolute bottom-0 left-0 h-px w-0 bg-[#C8906A] group-hover:w-full transition-all duration-300 ease-out" />
+            </button>
           </div>
 
           <CategoryFilter active={activeCategory} onChange={handleCategoryChange} />
 
-          <GarmentGrid
-            garments={garments}
-            loading={loading}
-            error={error}
-            onRetry={handleRetry}
-          />
+          <GarmentGrid garments={garments} loading={loading} error={error} onRetry={handleRetry} />
         </div>
       </main>
+      {modalOpen && (
+        <AddGarmentModal
+          onClose={() => setModalOpen(false)}
+          onSuccess={() => {
+            setModalOpen(false)
+            setRefreshKey((k) => k + 1)
+          }}
+        />
+      )}
     </div>
   )
 }

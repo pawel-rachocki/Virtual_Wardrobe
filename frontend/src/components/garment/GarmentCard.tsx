@@ -76,7 +76,10 @@ const GarmentCard = ({ garment, onClick }: GarmentCardProps) => {
           >
             {garment.name}
           </h3>
-          <p style={{ letterSpacing: '0.04em' }} className="text-xs text-[#7A7773] font-light mt-0.5">
+          <p
+            style={{ letterSpacing: '0.04em' }}
+            className="text-xs text-[#7A7773] font-light mt-0.5"
+          >
             {garment.brand}
           </p>
         </div>

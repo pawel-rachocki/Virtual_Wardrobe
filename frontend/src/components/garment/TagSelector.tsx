@@ -63,10 +63,7 @@ const TagSelector = ({ value, onChange, maxTags = 3 }: TagSelectorProps) => {
       )}
 
       {isAtLimit ? (
-        <p
-          style={{ color: '#C8906A', letterSpacing: '0.06em' }}
-          className="text-xs uppercase mb-3"
-        >
+        <p style={{ color: '#C8906A', letterSpacing: '0.06em' }} className="text-xs uppercase mb-3">
           Maksymalnie {maxTags} tagi
         </p>
       ) : (

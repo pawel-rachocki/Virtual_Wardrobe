@@ -19,12 +19,16 @@ export const getAll = async (category?: Category, tag?: string): Promise<Garment
 
 export const create = async (data: GarmentCreateRequest): Promise<Garment> => {
   const form = new FormData()
-  form.append('name', data.name)
-  form.append('brand', data.brand)
-  form.append('color', data.color)
-  form.append('season', data.season)
-  form.append('category', data.category)
-  ;(data.tags ?? []).forEach((tag) => form.append('tags', tag))
+
+  const metadata = {
+    name: data.name,
+    brand: data.brand,
+    color: data.color,
+    season: data.season,
+    category: data.category,
+    tags: data.tags ?? [],
+  }
+  form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }))
   form.append('image', data.image)
 
   const response = await api.post<Garment>(BASE, form)
