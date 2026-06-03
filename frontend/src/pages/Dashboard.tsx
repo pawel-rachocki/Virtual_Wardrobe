@@ -1,29 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const HangerIcon = () => (
-  <svg width="64" height="56" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M6 48 Q16 30 32 20 Q48 30 58 48"
-      stroke="#C8906A"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      fill="none"
-    />
-    <line x1="6" y1="48" x2="58" y2="48" stroke="#C8906A" strokeWidth="1.5" strokeLinecap="round" />
-    <path
-      d="M32 20 Q32 10 40 10 Q48 10 42 20"
-      stroke="#C8906A"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      fill="none"
-    />
-  </svg>
-)
+import type { Garment } from '../types/garment'
+import * as garmentService from '../services/garmentService'
+import GarmentGrid from '../components/garment/GarmentGrid'
 
 const Dashboard = () => {
   const navigate = useNavigate()
   const [mounted, setMounted] = useState(false)
+  const [garments, setGarments] = useState<Garment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const link = document.createElement('link')
@@ -39,6 +26,26 @@ const Dashboard = () => {
       if (document.head.contains(link)) document.head.removeChild(link)
     }
   }, [])
+
+  useEffect(() => {
+    garmentService
+      .getAll()
+      .then((data) => {
+        setGarments(data)
+        setError(null)
+        setLoading(false)
+      })
+      .catch(() => {
+        setError('Nie udało się załadować garderoby. Sprawdź połączenie i spróbuj ponownie.')
+        setLoading(false)
+      })
+  }, [refreshKey])
+
+  const handleRetry = () => {
+    setLoading(true)
+    setError(null)
+    setRefreshKey((k) => k + 1)
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -96,7 +103,7 @@ const Dashboard = () => {
           <div className="mt-6 flex items-center gap-4">
             <div className="w-10 h-px bg-[#C8906A]" />
             <span style={{ letterSpacing: '0.08em' }} className="text-sm text-[#9A9590] font-light">
-              0 pieces
+              {garments.length} {garments.length === 1 ? 'piece' : 'pieces'}
             </span>
           </div>
         </div>
@@ -105,7 +112,6 @@ const Dashboard = () => {
         <div
           className={`transition-all duration-700 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
         >
-          {/* Section label */}
           <div
             style={{ borderBottom: '1px solid #E8E4DF' }}
             className="flex items-center justify-between pb-3 mb-8"
@@ -116,43 +122,12 @@ const Dashboard = () => {
             <span className="text-xs text-[#C8C4BE]">—</span>
           </div>
 
-          {/* Placeholder container */}
-          <div style={{ borderColor: '#DDD8D0' }} className="border border-dashed rounded-sm">
-            {/* Ghost grid preview hinting at future cards */}
-            <div
-              style={{ borderBottom: '1px dashed #DDD8D0' }}
-              className="grid grid-cols-3 gap-px bg-[#DDD8D0] overflow-hidden rounded-t-sm"
-            >
-              {([0.15, 0.1, 0.07] as const).map((opacity, i) => (
-                <div
-                  key={i}
-                  style={{ backgroundColor: `rgba(200, 144, 106, ${opacity})` }}
-                  className="aspect-[3/4]"
-                />
-              ))}
-            </div>
-
-            {/* Empty state message */}
-            <div className="flex flex-col items-center justify-center py-16 px-8 text-center gap-6">
-              <div style={{ opacity: 0.55 }}>
-                <HangerIcon />
-              </div>
-              <div className="max-w-sm">
-                <p
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                  className="text-2xl sm:text-3xl font-light italic mb-3"
-                >
-                  Your closet awaits
-                </p>
-                <p
-                  style={{ letterSpacing: '0.03em' }}
-                  className="text-sm text-[#7A7570] font-light leading-relaxed"
-                >
-                  Your clothing pieces will appear here. Start building your digital wardrobe.
-                </p>
-              </div>
-            </div>
-          </div>
+          <GarmentGrid
+            garments={garments}
+            loading={loading}
+            error={error}
+            onRetry={handleRetry}
+          />
         </div>
       </main>
     </div>
