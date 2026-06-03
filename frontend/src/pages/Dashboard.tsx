@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Garment } from '../types/garment'
+import { Category } from '../types/garment'
 import * as garmentService from '../services/garmentService'
 import GarmentGrid from '../components/garment/GarmentGrid'
+import CategoryFilter from '../components/garment/CategoryFilter'
 
 const Dashboard = () => {
   const navigate = useNavigate()
@@ -11,6 +13,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [activeCategory, setActiveCategory] = useState<Category | null>(null)
 
   useEffect(() => {
     const link = document.createElement('link')
@@ -29,7 +32,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     garmentService
-      .getAll()
+      .getAll(activeCategory ?? undefined)
       .then((data) => {
         setGarments(data)
         setError(null)
@@ -39,7 +42,13 @@ const Dashboard = () => {
         setError('Nie udało się załadować garderoby. Sprawdź połączenie i spróbuj ponownie.')
         setLoading(false)
       })
-  }, [refreshKey])
+  }, [refreshKey, activeCategory])
+
+  const handleCategoryChange = (category: Category | null) => {
+    setActiveCategory(category)
+    setLoading(true)
+    setError(null)
+  }
 
   const handleRetry = () => {
     setLoading(true)
@@ -121,6 +130,8 @@ const Dashboard = () => {
             </span>
             <span className="text-xs text-[#C8C4BE]">—</span>
           </div>
+
+          <CategoryFilter active={activeCategory} onChange={handleCategoryChange} />
 
           <GarmentGrid
             garments={garments}
