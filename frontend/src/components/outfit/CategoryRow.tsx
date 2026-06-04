@@ -1,69 +1,18 @@
 import { useRef, useEffect, useState, useCallback, type ReactNode } from 'react'
 import type { Garment } from '../../types/garment'
-
-const PlaceholderHanger = () => (
-  <svg width="32" height="28" viewBox="0 0 64 56" fill="none">
-    <path
-      d="M6 48 Q16 30 32 20 Q48 30 58 48"
-      stroke="#C8C4BE"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      fill="none"
-    />
-    <line x1="6" y1="48" x2="58" y2="48" stroke="#C8C4BE" strokeWidth="1.5" strokeLinecap="round" />
-    <path
-      d="M32 20 Q32 10 40 10 Q48 10 42 20"
-      stroke="#C8C4BE"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      fill="none"
-    />
-  </svg>
-)
-
-const GarmentMiniCard = ({ garment }: { garment: Garment }) => (
-  <div
-    style={{
-      border: '1px solid #E8E4DF',
-      backgroundColor: '#FFFFFF',
-      minWidth: '100px',
-      maxWidth: '100px',
-      scrollSnapAlign: 'start',
-      flexShrink: 0,
-      transition: 'border-color 200ms ease, transform 200ms ease',
-    }}
-    className="rounded-sm cursor-pointer hover:border-[#C8906A] hover:-translate-y-0.5"
-  >
-    <div
-      style={{ backgroundColor: '#F5F2EE', aspectRatio: '3/4' }}
-      className="overflow-hidden rounded-t-sm flex items-center justify-center"
-    >
-      {garment.imageUrl ? (
-        <img src={garment.imageUrl} alt={garment.name} className="w-full h-full object-cover" />
-      ) : (
-        <PlaceholderHanger />
-      )}
-    </div>
-    <div className="px-2 py-1.5">
-      <p
-        style={{ fontFamily: "'Cormorant Garamond', serif" }}
-        className="text-sm font-light leading-tight text-[#1A1A18] truncate"
-      >
-        {garment.name}
-      </p>
-    </div>
-  </div>
-)
+import GarmentTile from './GarmentTile'
 
 interface CategoryRowProps {
   label: string
   icon: ReactNode
   garments: Garment[]
+  selectedGarment?: Garment
+  onSelect: (garment: Garment) => void
 }
 
 const SCROLL_STEP = 336 // ~3 cards (100px + 12px gap each)
 
-const CategoryRow = ({ label, icon, garments }: CategoryRowProps) => {
+const CategoryRow = ({ label, icon, garments, selectedGarment, onSelect }: CategoryRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -176,7 +125,12 @@ const CategoryRow = ({ label, icon, garments }: CategoryRowProps) => {
             }}
           >
             {garments.map((garment) => (
-              <GarmentMiniCard key={garment.id} garment={garment} />
+              <GarmentTile
+                key={garment.id}
+                garment={garment}
+                isSelected={selectedGarment?.id === garment.id}
+                onSelect={onSelect}
+              />
             ))}
           </div>
 

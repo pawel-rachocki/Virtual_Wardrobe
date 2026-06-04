@@ -44,15 +44,16 @@ const AccessoriesIcon = () => (
 interface CategoryConfig {
   category: Category
   label: string
+  shortLabel: string
   icon: ReactNode
 }
 
 const CATEGORY_CONFIG: CategoryConfig[] = [
-  { category: Category.HEAD,        label: 'Nakrycia głowy', icon: <HeadIcon /> },
-  { category: Category.TOP,         label: 'Góra',           icon: <TopIcon /> },
-  { category: Category.BOTTOM,      label: 'Dół',            icon: <BottomIcon /> },
-  { category: Category.SHOES,       label: 'Obuwie',         icon: <ShoesIcon /> },
-  { category: Category.ACCESSORIES, label: 'Dodatki',        icon: <AccessoriesIcon /> },
+  { category: Category.HEAD,        label: 'Nakrycia głowy', shortLabel: 'Głowa',   icon: <HeadIcon /> },
+  { category: Category.TOP,         label: 'Góra',           shortLabel: 'Góra',    icon: <TopIcon /> },
+  { category: Category.BOTTOM,      label: 'Dół',            shortLabel: 'Dół',     icon: <BottomIcon /> },
+  { category: Category.SHOES,       label: 'Obuwie',         shortLabel: 'Obuwie',  icon: <ShoesIcon /> },
+  { category: Category.ACCESSORIES, label: 'Dodatki',        shortLabel: 'Dodatki', icon: <AccessoriesIcon /> },
 ]
 
 const EMPTY_BY_CATEGORY: Record<Category, Garment[]> = {
@@ -74,6 +75,142 @@ const Spinner = () => (
   </div>
 )
 
+const PlaceholderHanger = () => (
+  <svg width="24" height="21" viewBox="0 0 64 56" fill="none">
+    <path d="M6 48 Q16 30 32 20 Q48 30 58 48" stroke="#C8C4BE" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    <line x1="6" y1="48" x2="58" y2="48" stroke="#C8C4BE" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M32 20 Q32 10 40 10 Q48 10 42 20" stroke="#C8C4BE" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+  </svg>
+)
+
+// ── Outfit preview panel ──────────────────────────────────────────────────────
+
+interface OutfitPreviewPanelProps {
+  selectedGarments: Partial<Record<Category, Garment>>
+  config: CategoryConfig[]
+  mounted: boolean
+}
+
+const OutfitPreviewPanel = ({ selectedGarments, config, mounted }: OutfitPreviewPanelProps) => {
+  const selectedCount = Object.keys(selectedGarments).length
+
+  return (
+    <div
+      className={`mt-16 transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+    >
+      {/* Divider */}
+      <div style={{ borderTop: '1px solid #E8E4DF' }} className="mb-10" />
+
+      {/* Section header */}
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <p style={{ letterSpacing: '0.24em' }} className="text-xs uppercase text-[#C8906A] mb-3">
+            Podgląd
+          </p>
+          <h3
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            className="text-4xl font-light leading-none"
+          >
+            Twój outfit
+          </h3>
+        </div>
+        <span
+          style={{ letterSpacing: '0.08em' }}
+          className="text-sm text-[#9A9590] font-light pb-1"
+        >
+          {selectedCount === 0 ? 'Wybierz ubrania powyżej' : `${selectedCount} z 5 elementów`}
+        </span>
+      </div>
+
+      {/* Slots */}
+      <div className="flex gap-4">
+        {config.map(({ category, shortLabel, icon }) => {
+          const garment = selectedGarments[category]
+          const isOccupied = !!garment
+
+          return (
+            <div key={category} className="flex flex-col items-center gap-2.5" style={{ flex: '1 1 0', minWidth: 0 }}>
+              {/* Card slot */}
+              <div
+                style={{
+                  width: '100%',
+                  aspectRatio: '3/4',
+                  border: isOccupied ? '1.5px solid #C8906A' : '1px dashed #DDD8D0',
+                  backgroundColor: isOccupied ? '#FFFFFF' : '#FAFAF9',
+                  borderRadius: '2px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  transition: 'border-color 300ms ease, box-shadow 300ms ease',
+                  boxShadow: isOccupied ? '0 4px 20px rgba(200, 144, 106, 0.14)' : 'none',
+                }}
+                className="flex items-center justify-center"
+              >
+                {isOccupied ? (
+                  <>
+                    {garment.imageUrl ? (
+                      <img
+                        src={garment.imageUrl}
+                        alt={garment.name}
+                        className="w-full h-full object-cover"
+                        style={{ transition: 'opacity 300ms ease' }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full" style={{ backgroundColor: '#F5F2EE' }}>
+                        <PlaceholderHanger />
+                      </div>
+                    )}
+                    {/* Warm tint overlay */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundColor: 'rgba(200, 144, 106, 0.05)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  </>
+                ) : (
+                  <span style={{ color: '#D4CFC9', opacity: 0.7 }}>{icon}</span>
+                )}
+              </div>
+
+              {/* Label */}
+              <div className="flex items-center gap-1.5 w-full justify-center">
+                <span style={{ color: isOccupied ? '#C8906A' : '#C8C4BE', transition: 'color 300ms ease' }}>
+                  {icon}
+                </span>
+                <span
+                  style={{
+                    letterSpacing: '0.12em',
+                    color: isOccupied ? '#7A7570' : '#C8C4BE',
+                    transition: 'color 300ms ease',
+                  }}
+                  className="text-xs uppercase truncate"
+                >
+                  {shortLabel}
+                </span>
+              </div>
+
+              {/* Garment name */}
+              <div style={{ minHeight: '18px' }} className="w-full text-center">
+                {isOccupied && (
+                  <p
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-sm font-light text-[#1A1A18] truncate"
+                    title={garment.name}
+                  >
+                    {garment.name}
+                  </p>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const OutfitCreatorPage = () => {
@@ -82,6 +219,7 @@ const OutfitCreatorPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [selectedGarments, setSelectedGarments] = useState<Partial<Record<Category, Garment>>>({})
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 80)
@@ -112,6 +250,17 @@ const OutfitCreatorPage = () => {
     setLoading(true)
     setError(null)
     setRefreshKey((k) => k + 1)
+  }
+
+  const handleSelectGarment = (garment: Garment) => {
+    setSelectedGarments((prev) => {
+      if (prev[garment.category]?.id === garment.id) {
+        const next = { ...prev }
+        delete next[garment.category]
+        return next
+      }
+      return { ...prev, [garment.category]: garment }
+    })
   }
 
   return (
@@ -160,16 +309,26 @@ const OutfitCreatorPage = () => {
           )}
 
           {!loading && !error && (
-            <div className="flex flex-col gap-8">
-              {CATEGORY_CONFIG.map(({ category, label, icon }) => (
-                <CategoryRow
-                  key={category}
-                  label={label}
-                  icon={icon}
-                  garments={garmentsByCategory[category]}
-                />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-col gap-8">
+                {CATEGORY_CONFIG.map(({ category, label, icon }) => (
+                  <CategoryRow
+                    key={category}
+                    label={label}
+                    icon={icon}
+                    garments={garmentsByCategory[category]}
+                    selectedGarment={selectedGarments[category]}
+                    onSelect={handleSelectGarment}
+                  />
+                ))}
+              </div>
+
+              <OutfitPreviewPanel
+                selectedGarments={selectedGarments}
+                config={CATEGORY_CONFIG}
+                mounted={mounted}
+              />
+            </>
           )}
         </div>
       </main>
