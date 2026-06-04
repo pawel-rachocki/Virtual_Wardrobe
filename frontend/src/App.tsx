@@ -4,6 +4,7 @@ import Login from './pages/Login.tsx'
 import Register from './pages/Register.tsx'
 import Dashboard from './pages/Dashboard.tsx'
 import Profile from './pages/Profile.tsx'
+import OutfitCreatorPage from './pages/OutfitCreatorPage.tsx'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/outfit-creator" element={<OutfitCreatorPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
