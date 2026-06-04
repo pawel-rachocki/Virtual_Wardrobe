@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 const NAV_LINKS = [
   { label: 'Twoja Garderoba', to: '/dashboard' },
   { label: 'Kreator Outfitu', to: '/outfit-creator' },
+  { label: 'Profil', to: '/profile' },
 ]
 
 interface Props {
@@ -66,9 +67,7 @@ const MainLayout = ({ children }: Props) => {
                     <span
                       style={{ fontFamily: "'Jost', sans-serif", letterSpacing: '0.14em' }}
                       className={`text-xs uppercase transition-colors duration-200 ${
-                        isActive
-                          ? 'text-[#1A1A18]'
-                          : 'text-[#6B6B67] group-hover:text-[#1A1A18]'
+                        isActive ? 'text-[#1A1A18]' : 'text-[#6B6B67] group-hover:text-[#1A1A18]'
                       }`}
                     >
                       {label}

@@ -105,10 +105,24 @@ const CategoryRow = ({ label, icon, garments, selectedGarment, onSelect }: Categ
           <button
             onClick={() => handleScrollBy(-SCROLL_STEP)}
             aria-label="Poprzednie ubrania"
-            style={{ ...arrowBase, left: '-14px', opacity: showPrev ? 1 : 0, pointerEvents: showPrev ? 'auto' : 'none' }}
+            style={{
+              ...arrowBase,
+              left: '-14px',
+              opacity: showPrev ? 1 : 0,
+              pointerEvents: showPrev ? 'auto' : 'none',
+            }}
             className="hover:border-[#C8906A]"
           >
-            <svg width="8" height="12" viewBox="0 0 8 12" fill="none" stroke="#A09A93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="8"
+              height="12"
+              viewBox="0 0 8 12"
+              fill="none"
+              stroke="#A09A93"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="6,1 2,6 6,11" />
             </svg>
           </button>
@@ -138,10 +152,24 @@ const CategoryRow = ({ label, icon, garments, selectedGarment, onSelect }: Categ
           <button
             onClick={() => handleScrollBy(SCROLL_STEP)}
             aria-label="Następne ubrania"
-            style={{ ...arrowBase, right: '-14px', opacity: showNext ? 1 : 0, pointerEvents: showNext ? 'auto' : 'none' }}
+            style={{
+              ...arrowBase,
+              right: '-14px',
+              opacity: showNext ? 1 : 0,
+              pointerEvents: showNext ? 'auto' : 'none',
+            }}
             className="hover:border-[#C8906A]"
           >
-            <svg width="8" height="12" viewBox="0 0 8 12" fill="none" stroke="#A09A93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="8"
+              height="12"
+              viewBox="0 0 8 12"
+              fill="none"
+              stroke="#A09A93"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="2,1 6,6 2,11" />
             </svg>
           </button>

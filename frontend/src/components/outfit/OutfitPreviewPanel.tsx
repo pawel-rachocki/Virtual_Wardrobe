@@ -3,14 +3,34 @@ import type { CategoryConfig } from '../../constants/outfitCategories'
 
 const MiniHanger = () => (
   <svg width="14" height="12" viewBox="0 0 64 56" fill="none">
-    <path d="M6 48 Q16 30 32 20 Q48 30 58 48" stroke="#C8C4BE" strokeWidth="2" strokeLinecap="round" fill="none" />
+    <path
+      d="M6 48 Q16 30 32 20 Q48 30 58 48"
+      stroke="#C8C4BE"
+      strokeWidth="2"
+      strokeLinecap="round"
+      fill="none"
+    />
     <line x1="6" y1="48" x2="58" y2="48" stroke="#C8C4BE" strokeWidth="2" strokeLinecap="round" />
-    <path d="M32 20 Q32 10 40 10 Q48 10 42 20" stroke="#C8C4BE" strokeWidth="2" strokeLinecap="round" fill="none" />
+    <path
+      d="M32 20 Q32 10 40 10 Q48 10 42 20"
+      stroke="#C8C4BE"
+      strokeWidth="2"
+      strokeLinecap="round"
+      fill="none"
+    />
   </svg>
 )
 
 const XIcon = () => (
-  <svg width="7" height="7" viewBox="0 0 7 7" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round">
+  <svg
+    width="7"
+    height="7"
+    viewBox="0 0 7 7"
+    fill="none"
+    stroke="white"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+  >
     <line x1="1" y1="1" x2="6" y2="6" />
     <line x1="6" y1="1" x2="1" y2="6" />
   </svg>
@@ -26,7 +46,12 @@ interface OutfitPreviewPanelProps {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-const SidebarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }: Omit<OutfitPreviewPanelProps, 'variant'>) => {
+const SidebarPanel = ({
+  selectedGarments,
+  config,
+  onDeselect,
+  onOpenSaveModal,
+}: Omit<OutfitPreviewPanelProps, 'variant'>) => {
   const selectedCount = Object.keys(selectedGarments).length
   const canSave = selectedCount > 0
 
@@ -40,7 +65,10 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }:
     >
       {/* Header */}
       <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #F0EDE8' }}>
-        <p style={{ letterSpacing: '0.22em', fontSize: '10px' }} className="uppercase text-[#C8906A] mb-2">
+        <p
+          style={{ letterSpacing: '0.22em', fontSize: '10px' }}
+          className="uppercase text-[#C8906A] mb-2"
+        >
           Podgląd
         </p>
         <div className="flex items-baseline justify-between">
@@ -98,13 +126,18 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }:
                 {isOccupied ? (
                   <>
                     {garment.imageUrl ? (
-                      <img src={garment.imageUrl} alt={garment.name} className="w-full h-full object-cover" />
+                      <img
+                        src={garment.imageUrl}
+                        alt={garment.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <MiniHanger />
                     )}
                     <div
                       style={{
-                        position: 'absolute', inset: 0,
+                        position: 'absolute',
+                        inset: 0,
                         backgroundColor: 'rgba(200,144,106,0.05)',
                         pointerEvents: 'none',
                       }}
@@ -112,7 +145,8 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }:
                     <div
                       className="opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                       style={{
-                        position: 'absolute', inset: 0,
+                        position: 'absolute',
+                        inset: 0,
                         backgroundColor: 'rgba(26,26,24,0.5)',
                         display: 'flex',
                         alignItems: 'center',
@@ -182,7 +216,12 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }:
 
 // ── Bar (mobile) ──────────────────────────────────────────────────────────────
 
-const BarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }: Omit<OutfitPreviewPanelProps, 'variant'>) => {
+const BarPanel = ({
+  selectedGarments,
+  config,
+  onDeselect,
+  onOpenSaveModal,
+}: Omit<OutfitPreviewPanelProps, 'variant'>) => {
   const selectedCount = Object.keys(selectedGarments).length
   const canSave = selectedCount > 0
 
@@ -208,7 +247,9 @@ const BarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }: Omi
             <div
               key={category}
               onClick={() => isOccupied && onDeselect(category)}
-              title={isOccupied ? `${shortLabel}: ${garment.name} — kliknij aby usunąć` : shortLabel}
+              title={
+                isOccupied ? `${shortLabel}: ${garment.name} — kliknij aby usunąć` : shortLabel
+              }
               style={{
                 width: '36px',
                 height: '44px',
@@ -225,12 +266,18 @@ const BarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }: Omi
             >
               {isOccupied ? (
                 garment.imageUrl ? (
-                  <img src={garment.imageUrl} alt={garment.name} className="w-full h-full object-cover" />
+                  <img
+                    src={garment.imageUrl}
+                    alt={garment.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <MiniHanger />
                 )
               ) : (
-                <span style={{ color: '#D4CFC9', transform: 'scale(0.75)', display: 'block' }}>{icon}</span>
+                <span style={{ color: '#D4CFC9', transform: 'scale(0.75)', display: 'block' }}>
+                  {icon}
+                </span>
               )}
             </div>
           )
@@ -240,7 +287,12 @@ const BarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }: Omi
       {/* Counter + button */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
         <span
-          style={{ letterSpacing: '0.06em', fontSize: '11px', minWidth: '28px', textAlign: 'center' }}
+          style={{
+            letterSpacing: '0.06em',
+            fontSize: '11px',
+            minWidth: '28px',
+            textAlign: 'center',
+          }}
           className={`font-light transition-colors duration-200 ${selectedCount > 0 ? 'text-[#C8906A]' : 'text-[#C8C4BE]'}`}
         >
           {selectedCount}/5

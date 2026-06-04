@@ -12,10 +12,10 @@ import * as outfitService from '../services/outfitService'
 type Tab = 'creator' | 'saved'
 
 const EMPTY_BY_CATEGORY: Record<Category, Garment[]> = {
-  [Category.HEAD]:        [],
-  [Category.TOP]:         [],
-  [Category.BOTTOM]:      [],
-  [Category.SHOES]:       [],
+  [Category.HEAD]: [],
+  [Category.TOP]: [],
+  [Category.BOTTOM]: [],
+  [Category.SHOES]: [],
   [Category.ACCESSORIES]: [],
 }
 
@@ -30,7 +30,8 @@ const Spinner = () => (
 
 const OutfitCreatorPage = () => {
   const [mounted, setMounted] = useState(false)
-  const [garmentsByCategory, setGarmentsByCategory] = useState<Record<Category, Garment[]>>(EMPTY_BY_CATEGORY)
+  const [garmentsByCategory, setGarmentsByCategory] =
+    useState<Record<Category, Garment[]>>(EMPTY_BY_CATEGORY)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -56,7 +57,13 @@ const OutfitCreatorPage = () => {
             acc[garment.category].push(garment)
             return acc
           },
-          { [Category.HEAD]: [], [Category.TOP]: [], [Category.BOTTOM]: [], [Category.SHOES]: [], [Category.ACCESSORIES]: [] },
+          {
+            [Category.HEAD]: [],
+            [Category.TOP]: [],
+            [Category.BOTTOM]: [],
+            [Category.SHOES]: [],
+            [Category.ACCESSORIES]: [],
+          }
         )
         setGarmentsByCategory(grouped)
         setLoading(false)
@@ -116,7 +123,10 @@ const OutfitCreatorPage = () => {
     selectedGarments,
     config: CATEGORY_CONFIG,
     onDeselect: handleDeselect,
-    onOpenSaveModal: () => { setModalKey((k) => k + 1); setIsModalOpen(true) },
+    onOpenSaveModal: () => {
+      setModalKey((k) => k + 1)
+      setIsModalOpen(true)
+    },
   }
 
   return (
@@ -224,9 +234,7 @@ const OutfitCreatorPage = () => {
             </>
           )}
 
-          {activeTab === 'saved' && (
-            <SavedOutfitsList key={savedRefreshKey} />
-          )}
+          {activeTab === 'saved' && <SavedOutfitsList key={savedRefreshKey} />}
         </div>
       </main>
 
@@ -263,7 +271,10 @@ const OutfitCreatorPage = () => {
           aria-live="polite"
         >
           <span style={{ color: '#C8906A', fontSize: '13px', lineHeight: 1 }}>✓</span>
-          <span style={{ letterSpacing: '0.14em', fontSize: '11px' }} className="uppercase font-light whitespace-nowrap">
+          <span
+            style={{ letterSpacing: '0.14em', fontSize: '11px' }}
+            className="uppercase font-light whitespace-nowrap"
+          >
             Outfit zapisany!
           </span>
         </div>

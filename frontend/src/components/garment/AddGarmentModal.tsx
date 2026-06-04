@@ -44,13 +44,6 @@ const AddGarmentModal = ({ onClose, onSuccess }: Props) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (!imageFile) return
-    const url = URL.createObjectURL(imageFile)
-    setPreviewUrl(url)
-    return () => URL.revokeObjectURL(url)
-  }, [imageFile])
-
   // Lock body scroll while modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -66,7 +59,10 @@ const AddGarmentModal = ({ onClose, onSuccess }: Props) => {
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) setImageFile(file)
+    if (!file) return
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setImageFile(file)
+    setPreviewUrl(URL.createObjectURL(file))
   }
 
   const validate = (): boolean => {
