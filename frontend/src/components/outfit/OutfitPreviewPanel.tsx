@@ -1,11 +1,5 @@
-import { useState } from 'react'
 import { Category, type Garment } from '../../types/garment'
 import type { CategoryConfig } from '../../constants/outfitCategories'
-
-const generateFallbackName = () => {
-  const days = ['Niedzielny', 'Poniedziałkowy', 'Wtorkowy', 'Środowy', 'Czwartkowy', 'Piątkowy', 'Sobotni']
-  return `${days[new Date().getDay()]} outfit`
-}
 
 const MiniHanger = () => (
   <svg width="14" height="12" viewBox="0 0 64 56" fill="none">
@@ -26,33 +20,15 @@ interface OutfitPreviewPanelProps {
   selectedGarments: Partial<Record<Category, Garment>>
   config: CategoryConfig[]
   onDeselect: (category: Category) => void
-  onSave: (name: string) => Promise<boolean>
-  isSaving: boolean
+  onOpenSaveModal: () => void
   variant?: 'sidebar' | 'bar'
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-const SidebarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }: Omit<OutfitPreviewPanelProps, 'variant'>) => {
-  const [name, setName] = useState('')
-  const [inputFocused, setInputFocused] = useState(false)
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-
+const SidebarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }: Omit<OutfitPreviewPanelProps, 'variant'>) => {
   const selectedCount = Object.keys(selectedGarments).length
-  const canSave = selectedCount > 0 && !isSaving
-
-  const handleSave = async () => {
-    if (!canSave) return
-    const outfitName = name.trim() || generateFallbackName()
-    const ok = await onSave(outfitName)
-    if (ok) {
-      setName('')
-      setStatus('success')
-    } else {
-      setStatus('error')
-    }
-    setTimeout(() => setStatus('idle'), 2500)
-  }
+  const canSave = selectedCount > 0
 
   return (
     <div
@@ -100,7 +76,7 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }
                 gap: '12px',
               }}
             >
-              {/* Thumbnail — klikalny gdy zajęty */}
+              {/* Thumbnail */}
               <div
                 className="group relative flex-shrink-0"
                 onClick={() => isOccupied && onDeselect(category)}
@@ -133,7 +109,6 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }
                         pointerEvents: 'none',
                       }}
                     />
-                    {/* Hover overlay z × */}
                     <div
                       className="opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                       style={{
@@ -152,7 +127,7 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }
                 )}
               </div>
 
-              {/* Etykieta + nazwa */}
+              {/* Label + name */}
               <div style={{ flex: '1 1 0', minWidth: 0 }}>
                 <p
                   style={{
@@ -180,38 +155,10 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }
         })}
       </div>
 
-      {/* Zapis */}
+      {/* Save */}
       <div style={{ padding: '14px 20px 18px' }}>
-        {/* Input na nazwę */}
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onFocus={() => setInputFocused(true)}
-          onBlur={() => setInputFocused(false)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-          placeholder="Nazwa outfitu..."
-          disabled={isSaving}
-          style={{
-            width: '100%',
-            padding: '6px 0',
-            marginBottom: '12px',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: `1px solid ${inputFocused ? '#C8906A' : '#E8E4DF'}`,
-            outline: 'none',
-            fontFamily: "'Cormorant Garamond', serif",
-            fontStyle: 'italic',
-            fontSize: '14px',
-            color: '#1A1A18',
-            transition: 'border-color 200ms ease',
-          }}
-          className="placeholder:text-[#C8C4BE]"
-        />
-
-        {/* Przycisk */}
         <button
-          onClick={handleSave}
+          onClick={onOpenSaveModal}
           disabled={!canSave}
           style={{
             width: '100%',
@@ -226,22 +173,8 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }
           }}
           className="uppercase font-light hover:enabled:bg-[#C8906A]"
         >
-          {isSaving ? 'Zapisywanie...' : 'Zapisz outfit'}
+          Zapisz outfit
         </button>
-
-        {/* Feedback */}
-        <div style={{ height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '8px' }}>
-          {status === 'success' && (
-            <p style={{ letterSpacing: '0.12em', color: '#7A9E7E', fontSize: '10px' }} className="uppercase transition-opacity">
-              ✓ Zapisano
-            </p>
-          )}
-          {status === 'error' && (
-            <p style={{ letterSpacing: '0.10em', color: '#C87070', fontSize: '10px' }} className="uppercase">
-              Błąd zapisu
-            </p>
-          )}
-        </div>
       </div>
     </div>
   )
@@ -249,18 +182,9 @@ const SidebarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }
 
 // ── Bar (mobile) ──────────────────────────────────────────────────────────────
 
-const BarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }: Omit<OutfitPreviewPanelProps, 'variant'>) => {
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-
+const BarPanel = ({ selectedGarments, config, onDeselect, onOpenSaveModal }: Omit<OutfitPreviewPanelProps, 'variant'>) => {
   const selectedCount = Object.keys(selectedGarments).length
-  const canSave = selectedCount > 0 && !isSaving
-
-  const handleSave = async () => {
-    if (!canSave) return
-    const ok = await onSave(generateFallbackName())
-    setStatus(ok ? 'success' : 'error')
-    setTimeout(() => setStatus('idle'), 2000)
-  }
+  const canSave = selectedCount > 0
 
   return (
     <div
@@ -274,7 +198,7 @@ const BarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }: Om
         gap: '10px',
       }}
     >
-      {/* Mini sloty */}
+      {/* Mini slots */}
       <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
         {config.map(({ category, shortLabel, icon }) => {
           const garment = selectedGarments[category]
@@ -313,18 +237,16 @@ const BarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }: Om
         })}
       </div>
 
-      {/* Licznik + przycisk */}
+      {/* Counter + button */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
         <span
           style={{ letterSpacing: '0.06em', fontSize: '11px', minWidth: '28px', textAlign: 'center' }}
-          className={`font-light transition-colors duration-200 ${
-            status === 'success' ? 'text-[#7A9E7E]' : status === 'error' ? 'text-[#C87070]' : selectedCount > 0 ? 'text-[#C8906A]' : 'text-[#C8C4BE]'
-          }`}
+          className={`font-light transition-colors duration-200 ${selectedCount > 0 ? 'text-[#C8906A]' : 'text-[#C8C4BE]'}`}
         >
-          {status === 'success' ? '✓' : status === 'error' ? '!' : `${selectedCount}/5`}
+          {selectedCount}/5
         </span>
         <button
-          onClick={handleSave}
+          onClick={onOpenSaveModal}
           disabled={!canSave}
           style={{
             padding: '9px 18px',
@@ -339,7 +261,7 @@ const BarPanel = ({ selectedGarments, config, onDeselect, onSave, isSaving }: Om
           }}
           className="uppercase font-light"
         >
-          {isSaving ? '...' : 'Zapisz'}
+          Zapisz
         </button>
       </div>
     </div>

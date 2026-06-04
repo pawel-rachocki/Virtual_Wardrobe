@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import MainLayout from '../components/MainLayout'
 import CategoryRow from '../components/outfit/CategoryRow'
 import OutfitPreviewPanel from '../components/outfit/OutfitPreviewPanel'
+import SaveOutfitModal from '../components/outfit/SaveOutfitModal'
 import { Category, type Garment } from '../types/garment'
 import { CATEGORY_CONFIG } from '../constants/outfitCategories'
 import * as garmentService from '../services/garmentService'
@@ -32,6 +33,9 @@ const OutfitCreatorPage = () => {
   const [refreshKey, setRefreshKey] = useState(0)
   const [selectedGarments, setSelectedGarments] = useState<Partial<Record<Category, Garment>>>({})
   const [isSaving, setIsSaving] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalKey, setModalKey] = useState(0)
+  const [toastVisible, setToastVisible] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 80)
@@ -91,6 +95,9 @@ const OutfitCreatorPage = () => {
         .map((g) => g.id)
       await outfitService.createOutfit({ name, garmentIds })
       setSelectedGarments({})
+      setIsModalOpen(false)
+      setToastVisible(true)
+      setTimeout(() => setToastVisible(false), 3000)
       return true
     } catch {
       return false
@@ -103,8 +110,7 @@ const OutfitCreatorPage = () => {
     selectedGarments,
     config: CATEGORY_CONFIG,
     onDeselect: handleDeselect,
-    onSave: handleSave,
-    isSaving,
+    onOpenSaveModal: () => { setModalKey((k) => k + 1); setIsModalOpen(true) },
   }
 
   return (
@@ -184,6 +190,38 @@ const OutfitCreatorPage = () => {
       {!loading && !error && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-20">
           <OutfitPreviewPanel {...panelProps} variant="bar" />
+        </div>
+      )}
+
+      {/* Modal zapisu */}
+      <SaveOutfitModal
+        key={modalKey}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+        isSaving={isSaving}
+      />
+
+      {/* Toast: sukces zapisu */}
+      {toastVisible && (
+        <div
+          style={{
+            backgroundColor: '#1A1A18',
+            color: '#FFFFFF',
+            padding: '12px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            boxShadow: '0 4px 24px rgba(26,24,22,0.22)',
+          }}
+          className="fixed z-40 bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6"
+          role="status"
+          aria-live="polite"
+        >
+          <span style={{ color: '#C8906A', fontSize: '13px', lineHeight: 1 }}>✓</span>
+          <span style={{ letterSpacing: '0.14em', fontSize: '11px' }} className="uppercase font-light whitespace-nowrap">
+            Outfit zapisany!
+          </span>
         </div>
       )}
     </MainLayout>
