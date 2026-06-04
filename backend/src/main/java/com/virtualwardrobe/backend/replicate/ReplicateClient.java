@@ -76,12 +76,7 @@ public class ReplicateClient {
         throw new TryOnException("Empty response from Replicate API", HttpStatus.BAD_GATEWAY);
       }
 
-      String outputUrl =
-          (response.output() != null && !response.output().isEmpty())
-              ? response.output().get(0)
-              : null;
-
-      return new PredictionStatusResult(response.status(), outputUrl);
+      return new PredictionStatusResult(response.status(), response.output());
     } catch (HttpClientErrorException e) {
       throw new TryOnException(resolveClientError(e), HttpStatus.BAD_GATEWAY, e);
     } catch (HttpServerErrorException e) {
