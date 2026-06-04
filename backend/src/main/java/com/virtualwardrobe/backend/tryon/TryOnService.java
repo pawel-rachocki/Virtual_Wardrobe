@@ -5,11 +5,14 @@ import com.virtualwardrobe.backend.domain.TryOnJob;
 import com.virtualwardrobe.backend.domain.TryOnStatus;
 import com.virtualwardrobe.backend.domain.User;
 import com.virtualwardrobe.backend.replicate.ReplicateClient;
+import com.virtualwardrobe.backend.replicate.dto.PredictionStatusResult;
 import com.virtualwardrobe.backend.repository.GarmentRepository;
 import com.virtualwardrobe.backend.repository.TryOnJobRepository;
 import com.virtualwardrobe.backend.repository.UserRepository;
 import com.virtualwardrobe.backend.tryon.dto.TryOnRequest;
 import com.virtualwardrobe.backend.tryon.dto.TryOnResponse;
+import com.virtualwardrobe.backend.tryon.dto.TryOnStatusResponse;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,5 +70,43 @@ public class TryOnService {
 
     TryOnJob saved = tryOnJobRepository.save(job);
     return new TryOnResponse(saved.getId(), saved.getStatus().name());
+  }
+
+  @Transactional
+  public TryOnStatusResponse getStatus(String userEmail, UUID jobId) {
+    User user =
+        userRepository
+            .findByEmail(userEmail)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+    TryOnJob job =
+        tryOnJobRepository
+            .findByIdAndUserId(jobId, user.getId())
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Try-on job not found"));
+
+    if (job.getStatus() == TryOnStatus.DONE || job.getStatus() == TryOnStatus.FAILED) {
+      return new TryOnStatusResponse(job.getStatus().name(), job.getResultUrl());
+    }
+
+    PredictionStatusResult result = replicateClient.getPredictionStatus(job.getReplicateJobId());
+    TryOnStatus mapped = mapReplicateStatus(result.status());
+
+    job.setStatus(mapped);
+    if (mapped == TryOnStatus.DONE) {
+      job.setResultUrl(result.outputUrl());
+    }
+    tryOnJobRepository.save(job);
+
+    return new TryOnStatusResponse(job.getStatus().name(), job.getResultUrl());
+  }
+
+  private TryOnStatus mapReplicateStatus(String replicateStatus) {
+    return switch (replicateStatus) {
+      case "succeeded" -> TryOnStatus.DONE;
+      case "failed", "canceled" -> TryOnStatus.FAILED;
+      default -> TryOnStatus.PROCESSING;
+    };
   }
 }
