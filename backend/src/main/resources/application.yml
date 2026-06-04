@@ -19,6 +19,12 @@ storage:
   bucket: ${MINIO_BUCKET:wardrobe}
   public-base-url: ${MINIO_PUBLIC_URL:http://localhost:9000/wardrobe}
 
+replicate:
+  api-token: ${REPLICATE_API_TOKEN}
+  model-version: ${REPLICATE_MODEL_VERSION}
+  base-url: https://api.replicate.com/v1
+  timeout: 30s
+
 server:
   error:
     include-message: always
