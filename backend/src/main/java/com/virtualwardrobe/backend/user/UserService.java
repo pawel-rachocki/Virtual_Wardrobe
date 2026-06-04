@@ -4,6 +4,7 @@ import com.virtualwardrobe.backend.domain.User;
 import com.virtualwardrobe.backend.repository.UserRepository;
 import com.virtualwardrobe.backend.storage.StorageService;
 import com.virtualwardrobe.backend.user.dto.BasePhotoResponse;
+import com.virtualwardrobe.backend.user.dto.UserProfileResponse;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,15 @@ public class UserService {
   public UserService(UserRepository userRepository, StorageService storageService) {
     this.userRepository = userRepository;
     this.storageService = storageService;
+  }
+
+  public UserProfileResponse getUserProfile(String userEmail) {
+    User user =
+        userRepository
+            .findByEmail(userEmail)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+    return new UserProfileResponse(user.getId(), user.getEmail(), user.getBasePhotoUrl());
   }
 
   @Transactional

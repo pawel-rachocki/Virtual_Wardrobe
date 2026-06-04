@@ -8,6 +8,8 @@ import { Category, type Garment } from '../types/garment'
 import { CATEGORY_CONFIG } from '../constants/outfitCategories'
 import * as garmentService from '../services/garmentService'
 import * as outfitService from '../services/outfitService'
+import * as userService from '../services/userService'
+import TryOnPanel from '../components/tryon/TryOnPanel'
 
 type Tab = 'creator' | 'saved'
 
@@ -42,10 +44,18 @@ const OutfitCreatorPage = () => {
   const [toastVisible, setToastVisible] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('creator')
   const [savedRefreshKey, setSavedRefreshKey] = useState(0)
+  const [basePhotoUrl, setBasePhotoUrl] = useState<string | null>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 80)
     return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    userService
+      .getCurrentUser()
+      .then((user) => setBasePhotoUrl(user.basePhotoUrl ?? null))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -208,6 +218,8 @@ const OutfitCreatorPage = () => {
               )}
 
               {!loading && !error && (
+                <>
+                <TryOnPanel selectedGarments={selectedGarments} basePhotoUrl={basePhotoUrl} />
                 <div className="flex gap-8 items-start">
                   {/* Rzędy kategorii */}
                   <div className="flex-1 min-w-0">
@@ -230,6 +242,7 @@ const OutfitCreatorPage = () => {
                     <OutfitPreviewPanel {...panelProps} variant="sidebar" />
                   </aside>
                 </div>
+                </>
               )}
             </>
           )}

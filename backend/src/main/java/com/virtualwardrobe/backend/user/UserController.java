@@ -1,9 +1,11 @@
 package com.virtualwardrobe.backend.user;
 
 import com.virtualwardrobe.backend.user.dto.BasePhotoResponse;
+import com.virtualwardrobe.backend.user.dto.UserProfileResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -18,6 +20,12 @@ public class UserController {
 
   public UserController(UserService userService) {
     this.userService = userService;
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<UserProfileResponse> getCurrentUser(Authentication authentication) {
+    UserProfileResponse response = userService.getUserProfile(authentication.getName());
+    return ResponseEntity.ok(response);
   }
 
   @PostMapping(value = "/base-photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
