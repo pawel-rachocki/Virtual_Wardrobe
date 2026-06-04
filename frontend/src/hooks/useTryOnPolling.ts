@@ -12,15 +12,21 @@ interface PollingState {
 const INITIAL_STATE: PollingState = { status: null, resultUrl: null, isPolling: false, error: null }
 const TERMINAL: TryOnStatus[] = ['DONE', 'FAILED']
 const POLL_INTERVAL_MS = 3000
+const SAFETY_TIMEOUT_MS = 5 * 60 * 1000
 
 export const useTryOnPolling = (jobId: string | null): PollingState => {
   const [state, setState] = useState<PollingState>(INITIAL_STATE)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const safetyRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const stopPolling = () => {
     if (intervalRef.current !== null) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
+    }
+    if (safetyRef.current !== null) {
+      clearTimeout(safetyRef.current)
+      safetyRef.current = null
     }
   }
 
@@ -53,6 +59,15 @@ export const useTryOnPolling = (jobId: string | null): PollingState => {
 
     poll()
     intervalRef.current = setInterval(poll, POLL_INTERVAL_MS)
+    safetyRef.current = setTimeout(() => {
+      stopPolling()
+      setState((prev) => ({
+        ...prev,
+        status: 'FAILED',
+        error: 'Wizualizacja trwa zbyt długo. Spróbuj ponownie.',
+        isPolling: false,
+      }))
+    }, SAFETY_TIMEOUT_MS)
 
     return stopPolling
   }, [jobId])
