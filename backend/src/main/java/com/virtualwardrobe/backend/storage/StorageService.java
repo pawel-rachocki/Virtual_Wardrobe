@@ -25,20 +25,21 @@ public class StorageService {
 
   public String upload(MultipartFile file) {
     validate(file);
-    String key = generateKey(file);
+    return uploadWithKey(file, generateKey(file));
+  }
 
+  public String uploadWithKey(MultipartFile file, String key) {
     try {
       minioClient.putObject(
           PutObjectArgs.builder().bucket(storageProperties.getBucket()).object(key).stream(
                   file.getInputStream(), file.getSize(), -1)
               .contentType(file.getContentType())
               .build());
-      log.info("File uploaded successfully");
+      log.info("File uploaded successfully: {}", key);
     } catch (Exception e) {
       log.error("Error uploading file: {}", e.getMessage());
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error uploading file");
     }
-
     return key;
   }
 

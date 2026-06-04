@@ -1,5 +1,6 @@
 package com.virtualwardrobe.backend.common.error;
 
+import com.virtualwardrobe.backend.replicate.TryOnException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,12 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(TryOnException.class)
+  public ResponseEntity<ApiError> handleTryOn(TryOnException ex) {
+    return ResponseEntity.status(ex.getStatus())
+        .body(new ApiError(ex.getStatus().value(), ex.getMessage(), Map.of()));
+  }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {

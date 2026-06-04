@@ -5,14 +5,35 @@ import DeleteOutfitDialog from './DeleteOutfitDialog'
 
 const MiniHanger = () => (
   <svg width="12" height="10" viewBox="0 0 64 56" fill="none">
-    <path d="M6 48 Q16 30 32 20 Q48 30 58 48" stroke="#C8C4BE" strokeWidth="2" strokeLinecap="round" fill="none" />
+    <path
+      d="M6 48 Q16 30 32 20 Q48 30 58 48"
+      stroke="#C8C4BE"
+      strokeWidth="2"
+      strokeLinecap="round"
+      fill="none"
+    />
     <line x1="6" y1="48" x2="58" y2="48" stroke="#C8C4BE" strokeWidth="2" strokeLinecap="round" />
-    <path d="M32 20 Q32 10 40 10 Q48 10 42 20" stroke="#C8C4BE" strokeWidth="2" strokeLinecap="round" fill="none" />
+    <path
+      d="M32 20 Q32 10 40 10 Q48 10 42 20"
+      stroke="#C8C4BE"
+      strokeWidth="2"
+      strokeLinecap="round"
+      fill="none"
+    />
   </svg>
 )
 
 const TrashIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
     <path d="M10 11v6M14 11v6" />
@@ -71,7 +92,11 @@ const SavedOutfitsList = () => {
           {error}
         </p>
         <button
-          onClick={() => { setError(null); setLoading(true); setFetchKey((k) => k + 1) }}
+          onClick={() => {
+            setError(null)
+            setLoading(true)
+            setFetchKey((k) => k + 1)
+          }}
           style={{ border: '1px solid #C8906A', letterSpacing: '0.14em' }}
           className="text-xs uppercase text-[#C8906A] px-5 py-2 hover:bg-[#C8906A] hover:text-white transition-colors duration-200"
         >
@@ -86,9 +111,29 @@ const SavedOutfitsList = () => {
       <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
         <div style={{ color: '#D4CFC9' }}>
           <svg width="36" height="30" viewBox="0 0 64 56" fill="none">
-            <path d="M6 48 Q16 30 32 20 Q48 30 58 48" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
-            <line x1="6" y1="48" x2="58" y2="48" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M32 20 Q32 10 40 10 Q48 10 42 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+            <path
+              d="M6 48 Q16 30 32 20 Q48 30 58 48"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <line
+              x1="6"
+              y1="48"
+              x2="58"
+              y2="48"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M32 20 Q32 10 40 10 Q48 10 42 20"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              fill="none"
+            />
           </svg>
         </div>
         <p
@@ -170,7 +215,11 @@ const OutfitCard = ({ outfit, onDeleteClick }: CardProps) => {
             }}
           >
             {garment.imageUrl ? (
-              <img src={garment.imageUrl} alt={garment.name} className="w-full h-full object-cover" />
+              <img
+                src={garment.imageUrl}
+                alt={garment.name}
+                className="w-full h-full object-cover"
+              />
             ) : (
               <MiniHanger />
             )}
@@ -192,10 +241,7 @@ const OutfitCard = ({ outfit, onDeleteClick }: CardProps) => {
       </div>
 
       {/* Info + akcje */}
-      <div
-        style={{ padding: '12px 16px 14px' }}
-        className="flex items-start justify-between gap-3"
-      >
+      <div style={{ padding: '12px 16px 14px' }} className="flex items-start justify-between gap-3">
         <div style={{ minWidth: 0 }}>
           <p
             style={{ fontFamily: "'Cormorant Garamond', serif" }}
@@ -203,7 +249,10 @@ const OutfitCard = ({ outfit, onDeleteClick }: CardProps) => {
           >
             {outfit.name}
           </p>
-          <p style={{ letterSpacing: '0.05em', marginTop: '3px' }} className="text-xs text-[#9A9590]">
+          <p
+            style={{ letterSpacing: '0.05em', marginTop: '3px' }}
+            className="text-xs text-[#9A9590]"
+          >
             {formatDate(outfit.createdAt)}
           </p>
         </div>

@@ -82,7 +82,12 @@ const SaveOutfitModal = ({ isOpen, onClose, onSave, isSaving }: SaveOutfitModalP
         {/* Drag handle — mobile only */}
         <div className="flex justify-center pt-3 sm:hidden">
           <div
-            style={{ width: '32px', height: '3px', backgroundColor: '#E0DCD7', borderRadius: '99px' }}
+            style={{
+              width: '32px',
+              height: '3px',
+              backgroundColor: '#E0DCD7',
+              borderRadius: '99px',
+            }}
           />
         </div>
 

@@ -8,14 +8,16 @@ import { Category, type Garment } from '../types/garment'
 import { CATEGORY_CONFIG } from '../constants/outfitCategories'
 import * as garmentService from '../services/garmentService'
 import * as outfitService from '../services/outfitService'
+import * as userService from '../services/userService'
+import TryOnPanel from '../components/tryon/TryOnPanel'
 
 type Tab = 'creator' | 'saved'
 
 const EMPTY_BY_CATEGORY: Record<Category, Garment[]> = {
-  [Category.HEAD]:        [],
-  [Category.TOP]:         [],
-  [Category.BOTTOM]:      [],
-  [Category.SHOES]:       [],
+  [Category.HEAD]: [],
+  [Category.TOP]: [],
+  [Category.BOTTOM]: [],
+  [Category.SHOES]: [],
   [Category.ACCESSORIES]: [],
 }
 
@@ -30,7 +32,8 @@ const Spinner = () => (
 
 const OutfitCreatorPage = () => {
   const [mounted, setMounted] = useState(false)
-  const [garmentsByCategory, setGarmentsByCategory] = useState<Record<Category, Garment[]>>(EMPTY_BY_CATEGORY)
+  const [garmentsByCategory, setGarmentsByCategory] =
+    useState<Record<Category, Garment[]>>(EMPTY_BY_CATEGORY)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -41,10 +44,18 @@ const OutfitCreatorPage = () => {
   const [toastVisible, setToastVisible] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('creator')
   const [savedRefreshKey, setSavedRefreshKey] = useState(0)
+  const [basePhotoUrl, setBasePhotoUrl] = useState<string | null>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 80)
     return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    userService
+      .getCurrentUser()
+      .then((user) => setBasePhotoUrl(user.basePhotoUrl ?? null))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -56,7 +67,13 @@ const OutfitCreatorPage = () => {
             acc[garment.category].push(garment)
             return acc
           },
-          { [Category.HEAD]: [], [Category.TOP]: [], [Category.BOTTOM]: [], [Category.SHOES]: [], [Category.ACCESSORIES]: [] },
+          {
+            [Category.HEAD]: [],
+            [Category.TOP]: [],
+            [Category.BOTTOM]: [],
+            [Category.SHOES]: [],
+            [Category.ACCESSORIES]: [],
+          }
         )
         setGarmentsByCategory(grouped)
         setLoading(false)
@@ -116,7 +133,10 @@ const OutfitCreatorPage = () => {
     selectedGarments,
     config: CATEGORY_CONFIG,
     onDeselect: handleDeselect,
-    onOpenSaveModal: () => { setModalKey((k) => k + 1); setIsModalOpen(true) },
+    onOpenSaveModal: () => {
+      setModalKey((k) => k + 1)
+      setIsModalOpen(true)
+    },
   }
 
   return (
@@ -198,6 +218,8 @@ const OutfitCreatorPage = () => {
               )}
 
               {!loading && !error && (
+                <>
+                <TryOnPanel selectedGarments={selectedGarments} basePhotoUrl={basePhotoUrl} />
                 <div className="flex gap-8 items-start">
                   {/* Rzędy kategorii */}
                   <div className="flex-1 min-w-0">
@@ -220,13 +242,12 @@ const OutfitCreatorPage = () => {
                     <OutfitPreviewPanel {...panelProps} variant="sidebar" />
                   </aside>
                 </div>
+                </>
               )}
             </>
           )}
 
-          {activeTab === 'saved' && (
-            <SavedOutfitsList key={savedRefreshKey} />
-          )}
+          {activeTab === 'saved' && <SavedOutfitsList key={savedRefreshKey} />}
         </div>
       </main>
 
@@ -263,7 +284,10 @@ const OutfitCreatorPage = () => {
           aria-live="polite"
         >
           <span style={{ color: '#C8906A', fontSize: '13px', lineHeight: 1 }}>✓</span>
-          <span style={{ letterSpacing: '0.14em', fontSize: '11px' }} className="uppercase font-light whitespace-nowrap">
+          <span
+            style={{ letterSpacing: '0.14em', fontSize: '11px' }}
+            className="uppercase font-light whitespace-nowrap"
+          >
             Outfit zapisany!
           </span>
         </div>
