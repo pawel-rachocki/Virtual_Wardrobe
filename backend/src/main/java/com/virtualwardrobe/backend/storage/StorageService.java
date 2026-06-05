@@ -48,6 +48,14 @@ public class StorageService {
     return storageProperties.getPublicBaseUrl() + "/" + key;
   }
 
+  /**
+   * Buduje URL obiektu dostepny dla zewnetrznego serwisu Replicate. W dev wskazuje na tunel (ngrok),
+   * bo Replicate nie pobierze plikow z localhost. {@link #buildPublicUrl} zostaje dla przegladarki.
+   */
+  public String buildReplicateUrl(String key) {
+    return storageProperties.getReplicateBaseUrl() + "/" + key;
+  }
+
   public void delete(String key) {
     try {
       minioClient.removeObject(

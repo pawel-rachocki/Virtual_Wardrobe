@@ -9,6 +9,7 @@ import com.virtualwardrobe.backend.replicate.dto.PredictionStatusResult;
 import com.virtualwardrobe.backend.repository.GarmentRepository;
 import com.virtualwardrobe.backend.repository.TryOnJobRepository;
 import com.virtualwardrobe.backend.repository.UserRepository;
+import com.virtualwardrobe.backend.storage.StorageService;
 import com.virtualwardrobe.backend.tryon.dto.TryOnRequest;
 import com.virtualwardrobe.backend.tryon.dto.TryOnResponse;
 import com.virtualwardrobe.backend.tryon.dto.TryOnStatusResponse;
@@ -25,16 +26,19 @@ public class TryOnService {
   private final GarmentRepository garmentRepository;
   private final TryOnJobRepository tryOnJobRepository;
   private final ReplicateClient replicateClient;
+  private final StorageService storageService;
 
   public TryOnService(
       UserRepository userRepository,
       GarmentRepository garmentRepository,
       TryOnJobRepository tryOnJobRepository,
-      ReplicateClient replicateClient) {
+      ReplicateClient replicateClient,
+      StorageService storageService) {
     this.userRepository = userRepository;
     this.garmentRepository = garmentRepository;
     this.tryOnJobRepository = tryOnJobRepository;
     this.replicateClient = replicateClient;
+    this.storageService = storageService;
   }
 
   @Transactional
@@ -56,9 +60,10 @@ public class TryOnService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment not found"));
 
     String description = garment.getName() + " " + garment.getBrand();
+    String basePhotoUrl = storageService.buildReplicateUrl(user.getBasePhotoUrl());
+    String garmentImageUrl = storageService.buildReplicateUrl(garment.getImageUrl());
     String replicateJobId =
-        replicateClient.createPrediction(
-            user.getBasePhotoUrl(), garment.getImageUrl(), description);
+        replicateClient.createPrediction(basePhotoUrl, garmentImageUrl, description);
 
     TryOnJob job =
         TryOnJob.builder()

@@ -18,4 +18,6 @@ public class StorageProperties {
   private String bucket;
 
   private String publicBaseUrl;
+
+  private String replicateBaseUrl;
 }

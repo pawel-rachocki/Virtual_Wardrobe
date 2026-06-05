@@ -31,7 +31,11 @@ public class UserService {
             .findByEmail(userEmail)
             .orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-    return new UserProfileResponse(user.getId(), user.getEmail(), user.getBasePhotoUrl());
+    String basePhotoUrl =
+        user.getBasePhotoUrl() == null
+            ? null
+            : storageService.buildPublicUrl(user.getBasePhotoUrl());
+    return new UserProfileResponse(user.getId(), user.getEmail(), basePhotoUrl);
   }
 
   @Transactional
@@ -49,10 +53,9 @@ public class UserService {
     String key = "users/" + user.getId() + "/base-photo.jpg";
     storageService.uploadWithKey(file, key);
 
-    String url = storageService.buildPublicUrl(key);
-    user.setBasePhotoUrl(url);
+    user.setBasePhotoUrl(key);
     userRepository.save(user);
 
-    return new BasePhotoResponse(url);
+    return new BasePhotoResponse(storageService.buildPublicUrl(key));
   }
 }
